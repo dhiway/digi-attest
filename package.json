@@ -14,24 +14,33 @@
     "@capacitor/camera": "^7.0.2",
     "@capacitor/core": "^7.4.3",
     "@capacitor/ios": "^7.4.3",
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tanstack/react-router": "^1.132.41",
     "@vitejs/plugin-react": "^5.0.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.544.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "tailwind-merge": "^3.3.1"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.64.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
-    "@eslint/js": "^9.36.0",
+    "@eslint/js": "^9.37.0",
     "@tailwindcss/vite": "^4.1.14",
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
+    "@tanstack/react-router-devtools": "^1.132.41",
+    "@tanstack/router-plugin": "^1.132.41",
+    "@types/node": "^24.7.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.36.0",
-    "eslint-plugin-react-hooks": "^6.1.0",
+    "eslint": "^9.37.0",
+    "eslint-plugin-react-hooks": "^6.1.1",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
@@ -39,11 +48,6 @@
     "tw-animate-css": "^1.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "npm:rolldown-vite@7.1.15"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@7.1.15"
-    }
+    "vite": "7.1.9"
   }
 }

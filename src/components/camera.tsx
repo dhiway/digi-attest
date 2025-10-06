@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Camera, CameraResultType } from "@capacitor/camera";
 
-function App() {
+function CameraLayout() {
   const [photo, setPhoto] = useState<string | null>(null);
 
   async function takePhoto() {
@@ -21,7 +21,7 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+    <div className="w-screen flex flex-col items-center justify-center h-screen bg-gray-100">
       {/* Preview */}
       <div className="w-full max-w-sm aspect-square bg-gray-200 flex items-center justify-center overflow-hidden rounded-lg shadow">
         {photo ? (
@@ -38,7 +38,7 @@ function App() {
       {/* Camera button */}
       <button
         onClick={takePhoto}
-        className="mt-6 p-4 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition"
+        className="mt-6 p-4 w-6 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition"
       >
         {/* Simple camera SVG icon */}
         <svg
@@ -57,9 +57,10 @@ function App() {
             012-2zm9 3a4 4 0 100 8 4 4 0 000-8z"
           />
         </svg>
+        Take Photo
       </button>
     </div>
   );
 }
 
-export default App;
+export default CameraLayout;
