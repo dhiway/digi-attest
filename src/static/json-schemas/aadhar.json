@@ -1,181 +1,32 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Aadhaar Card Schema (Draft-07)",
+  "title": "Aadhaar Card",
+  "description": "Basic Aadhaar card information.",
   "type": "object",
-  "additionalProperties": false,
+  "required": [
+    "name",
+    "aadhaarNumber",
+    "phoneNumber"
+  ],
   "properties": {
-    "aadhaar_number": {
-      "type": "string",
-      "description": "12 digit Aadhaar number (optionally spaced as '1234 5678 9012')",
-      "pattern": "^(?:\\d{12}|\\d{4}\\s\\d{4}\\s\\d{4})$"
-    },
     "name": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 200
+      "title": "Full Name",
+      "description": "Enter your full name as on Aadhaar.",
+      "minLength": 3,
+      "maxLength": 100
     },
-    "name_local": {
+    "aadhaarNumber": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 200,
-      "description": "Name in local / native script (optional)"
+      "title": "Aadhaar Number",
+      "description": "Enter your 12-digit Aadhaar number.",
+      "pattern": "^[0-9]{12}$"
     },
-    "gender": {
+    "phoneNumber": {
       "type": "string",
-      "enum": [
-        "Male",
-        "Female",
-        "Transgender",
-        "Other",
-        "Not Specified"
-      ]
-    },
-    "date_of_birth": {
-      "type": "string",
-      "format": "date",
-      "description": "ISO-8601 date (YYYY-MM-DD)"
-    },
-    "age": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 150,
-      "description": "Optional numeric age (should match date_of_birth if both present)"
-    },
-    "address": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "care_of": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "house": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "street": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "locality": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "landmark": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "village_town_city": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "sub_district": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "district": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "state": {
-          "type": "string",
-          "maxLength": 200
-        },
-        "pincode": {
-          "type": "string",
-          "pattern": "^\\d{6}$",
-          "description": "6 digit Indian PIN code"
-        }
-      },
-      "required": [
-        "village_town_city",
-        "district",
-        "state",
-        "pincode"
-      ]
-    },
-    "photo": {
-      "type": "string",
-      "description": "Base64 data URL of photograph (optional). Example: data:image/jpeg;base64,...",
-      "pattern": "^data:image\\/(png|jpeg|jpg);base64,[A-Za-z0-9+/=\\s]+$"
-    },
-    "mobile_number": {
-      "type": "string",
-      "pattern": "^[6-9]\\d{9}$",
-      "description": "10 digit Indian mobile number (starts with 6-9)"
-    },
-    "email": {
-      "type": "string",
-      "format": "email"
-    },
-    "document_issued_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date when Aadhaar document/digitally-issued copy was generated (optional)"
-    },
-    "document_version": {
-      "type": "string",
-      "description": "Optional version or revision identifier for the document (e.g., 'v1')"
-    },
-    "biometrics_present": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "fingerprints": {
-          "type": "boolean"
-        },
-        "iris": {
-          "type": "boolean"
-        },
-        "face": {
-          "type": "boolean"
-        }
-      },
-      "required": []
-    },
-    "consent": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "share_with_third_party": {
-          "type": "boolean"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "metadata": {
-      "type": "object",
-      "description": "Free-form metadata (optional)",
-      "additionalProperties": true
+      "title": "Phone Number",
+      "description": "Enter your 10-digit mobile number.",
+      "pattern": "^[6-9][0-9]{9}$"
     }
-  },
-  "required": [
-    "aadhaar_number",
-    "name",
-    "gender",
-    "date_of_birth",
-    "address"
-  ],
-  "examples": [
-    {
-      "aadhaar_number": "1234 5678 9012",
-      "name": "RAHUL KUMAR",
-      "gender": "Male",
-      "date_of_birth": "1990-05-10",
-      "address": {
-        "house": "12A",
-        "street": "MG Road",
-        "village_town_city": "Bengaluru",
-        "district": "Bengaluru Urban",
-        "state": "Karnataka",
-        "pincode": "560001"
-      },
-      "mobile_number": "9876543210",
-      "email": "rahul@example.com",
-      "photo": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
-    }
-  ]
+  }
 }
