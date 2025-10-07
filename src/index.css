@@ -1,6 +1,15 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+body {
+  padding-top: env(safe-area-inset-top);
+}
+
+.main-container {
+  height: calc(100dvh - 4rem);
+  width: 100dvw;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

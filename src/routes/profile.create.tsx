@@ -48,7 +48,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className='h-svh w-svw overflow-hidden px-4'>
+    <div className='h-dvh w-dvw overflow-hidden px-4'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
