@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Outlet, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { useRouter } from '@tanstack/react-router';
@@ -9,7 +9,7 @@ export function useBackButtonHandler() {
 
 const RootLayout = () => {
   const router = useRouter();
-
+  const navigate = useNavigate()
   useEffect(() => {
     const handler = CapacitorApp.addListener('backButton', (event: any) => {
       if (router.history.canGoBack()) {
@@ -26,7 +26,7 @@ const RootLayout = () => {
   }, [router]);
   return (
     <main className='main-container' >
-      <div className='py-4 h-16 text-2xl justify-center items-center flex'>Logo</div>
+      <div onClick={() => navigate({ to: '/' })} className='py-4 h-16 text-2xl justify-center items-center flex'>Logo</div>
       <Outlet />
       <TanStackRouterDevtools position='bottom-right' />
     </main>
