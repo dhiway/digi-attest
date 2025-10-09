@@ -6,7 +6,7 @@ body {
 }
 
 .main-container {
-  height: calc(100dvh - 4rem);
+  height: calc(100dvh - 4rem - env(safe-area-inset-top));
   width: 100dvw;
 }
 

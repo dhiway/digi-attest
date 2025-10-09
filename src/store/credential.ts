@@ -9,9 +9,9 @@ const credentialPhotoSchema = z.object({
 // Zod schema for credentialSchema
 export const credentialSchemaSchema = z.object({
   name: z.string(),
-  url: z.string().url().nullable(),
+  url: z.string().url().optional(),
   body: z.any(), // JSON type can be any JS object
-  new: z.boolean(),
+  new: z.boolean().default(false).optional(),
 });
 
 // Zustand store type definitions
@@ -38,7 +38,7 @@ export const useCredentialSchemaStore = create<
   }
 >((set) => ({
   name: '',
-  url: null,
+  url: undefined,
   body: {},
   new: false,
   setCredentialSchema: (state) => {

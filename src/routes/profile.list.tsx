@@ -7,7 +7,7 @@ export const Route = createFileRoute('/profile/list')({
 
 function RouteComponent() {
   const navigate = useNavigate()
-  return <div className='px-4'>
+  return <div className='px-4 main-container'>
     <Card onClick={() => { navigate({ 'to': '/schema/select' }) }}>
       <p> Go to Profile</p>
     </Card>

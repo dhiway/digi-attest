@@ -11,7 +11,7 @@ const log = (type: any) => console.log.bind(console, type);
 function RouteComponent() {
   const { body } = useCredentialSchemaStore()
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="main-container max-w-2xl mx-auto py-8 px-4">
       <ShadCNForm
         schema={body}
         validator={validator}

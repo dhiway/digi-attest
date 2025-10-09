@@ -9,7 +9,7 @@ export const Route = createFileRoute('/')({
 function Index() {
   const navigate = useNavigate()
   return (
-    <section className='relative h-svh w-svw overflow-hidden flex justify-center items-center'>
+    <section className='relative main-container overflow-hidden flex justify-center items-center'>
       <Button className='capitalize w-3/4' onClick={() => navigate({ 'to': '/profile/create' })}>
         create profile
       </Button>

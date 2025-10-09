@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
@@ -29,8 +29,8 @@ function RouteComponent() {
   const navigate = useNavigate()
   const { setCredentialSchema, name, url, body } = useCredentialSchemaStore()
   const [schemas, setSchemas] = useState<
-    { name: string; url: string | null; body: object }[]
-  >([{ name: 'Aadhaar', url: null, body: AadharSchema }])
+    { name: string; url: string | undefined; body: object }[]
+  >([{ name: 'Aadhaar', url: undefined, body: AadharSchema }])
   const [isCreatingNew, setIsCreatingNew] = useState(false)
 
   const form = useForm<CredentialSchemaInput>({
@@ -39,7 +39,7 @@ function RouteComponent() {
     ),
     defaultValues: {
       name: '',
-      url: null,
+      url: undefined,
       body: {},
     },
   })
