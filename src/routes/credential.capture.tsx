@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { takePhoto } from '@/lib/capacitor/camera';
+import { useCredentialPhotoStore } from '@/store/credential';
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react';
 
@@ -10,6 +11,7 @@ export const Route = createFileRoute('/credential/capture')({
 function RouteComponent() {
   const navigate = useNavigate()
   const [photo, setPhoto] = useState<string | null>(null);
+  const { setUrl } = useCredentialPhotoStore()
 
   return <div className='px-4 main-container flex items-center justify-center flex-col overflow-scroll'>
     <section>
@@ -21,7 +23,7 @@ function RouteComponent() {
     </section>
     <section className='flex flex-col gap-4 w-4/5 mb-8'>
       <Button
-        onClick={async () => { const photo = await takePhoto(); setPhoto(photo) }}
+        onClick={async () => { const photo = await takePhoto(); setPhoto(photo); setUrl({ url: photo }) }}
         className="mt-6 p-4 "
       >
         <svg

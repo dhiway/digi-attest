@@ -20,15 +20,19 @@ type CredentialSchema = z.infer<typeof credentialSchemaSchema>;
 
 // Zustand stores
 
-export const useCredentialPhotoStore = create<CredentialPhoto>((set) => ({
+export const useCredentialPhotoStore = create<
+  CredentialPhoto & {
+    setUrl: (state: Partial<CredentialPhoto>) => void;
+  }
+>((set) => ({
   url: null,
-  setUrl: (url: string | null) => {
-    const validation = credentialPhotoSchema.safeParse({ url });
-    if (validation.success) {
-      set({ url });
-    } else {
+  setUrl: (state) => {
+    /* const validation = credentialPhotoSchema.safeParse(state);
+    if (validation.success) { */
+    set(state);
+    /* } else {
       console.error('Invalid URL for credentialPhoto:', validation.error);
-    }
+    } */
   },
 }));
 
@@ -49,4 +53,31 @@ export const useCredentialSchemaStore = create<
       console.error('Invalid state for credentialSchema:', validation.error);
     }
   },
+}));
+
+export interface Credential {
+  id: string;
+  name: string;
+  userId: string;
+  profileId: string | null;
+  orgId: string | null;
+  imageUrl: string;
+  schemaId: string;
+  data: Record<string, any>;
+  imageHash: string;
+  dataHash: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CredentialState {
+  credential: Credential | null;
+  setCredential: (credential: Credential) => void;
+  clearCredential: () => void;
+}
+
+export const useCredentialStore = create<CredentialState>((set) => ({
+  credential: null,
+  setCredential: (credential) => set({ credential }),
+  clearCredential: () => set({ credential: null }),
 }));
