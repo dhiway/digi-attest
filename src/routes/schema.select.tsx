@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod/v3'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
@@ -16,8 +17,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import AadharSchema from '@/static/json-schemas/aadhar.json'
+
 import { credentialSchemaSchema, useCredentialSchemaStore } from '@/store/credential'
+import { getSchemas, createSchema } from '@/lib/api'
 
 export const Route = createFileRoute('/schema/select')({
   component: RouteComponent,
@@ -27,16 +29,29 @@ type CredentialSchemaInput = z.infer<typeof credentialSchemaSchema>
 
 function RouteComponent() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { setCredentialSchema, name, url, body } = useCredentialSchemaStore()
-  const [schemas, setSchemas] = useState<
-    { name: string; url: string | undefined; body: object }[]
-  >([{ name: 'Aadhaar', url: undefined, body: AadharSchema }])
   const [isCreatingNew, setIsCreatingNew] = useState(false)
 
+  // ✅ Fetch all schemas
+  const { data: schemas = [], isLoading } = useQuery({
+    queryKey: ['schemas'],
+    queryFn: getSchemas,
+  })
+
+  // ✅ Create schema mutation
+  const createMutation = useMutation({
+    mutationFn: createSchema,
+    onSuccess: (newSchema) => {
+      queryClient.setQueryData(['schemas'], (old: any) => [...(old || []), newSchema])
+      setCredentialSchema({ ...newSchema, new: true })
+      setIsCreatingNew(false)
+      form.reset()
+    },
+  })
+
   const form = useForm<CredentialSchemaInput>({
-    resolver: zodResolver(
-      credentialSchemaSchema.omit({ new: true }) // new is managed internally
-    ),
+    resolver: zodResolver(credentialSchemaSchema.omit({ new: true })),
     defaultValues: {
       name: '',
       url: undefined,
@@ -45,11 +60,11 @@ function RouteComponent() {
   })
 
   const handleSelect = (schemaName: string) => {
-    const selected = schemas.find((s) => s.name === schemaName)
+    const selected = schemas.find((s: any) => s.name === schemaName)
     if (selected) {
       setCredentialSchema({
         name: selected.name,
-        url: selected.url,
+        url: selected.url || undefined,
         body: selected.body,
         new: false,
       })
@@ -57,17 +72,32 @@ function RouteComponent() {
   }
 
   const handleCreateNew = (data: CredentialSchemaInput) => {
-    const newSchemaObj = {
-      name: data.name,
-      url: data.url,
-      body: data.body,
-    }
+    try {
+      let body = data.body
+      let url = typeof data.url === 'string' && data.url.trim().length > 0 ? data.url.trim() : undefined
 
-    setSchemas((prev) => [...prev, newSchemaObj])
-    setCredentialSchema({ ...newSchemaObj, new: true })
-    setIsCreatingNew(false)
-    form.reset()
+      if (typeof body !== 'object' && typeof body === "string" && !url) {
+        if (body.trim().length === 0) {
+          throw Error('Invalid body and Missing Url')
+        }
+        body = JSON.parse(body)
+      }
+      createMutation.mutate({
+        name: data.name,
+        description: data.name,
+        version: '1.0.0',
+        body: body,
+        url: url,
+      })
+    } catch (err: any) { console.error(err.message) }
   }
+
+  if (isLoading)
+    return (
+      <section className="main-container flex justify-center items-center">
+        <p>Loading schemas...</p>
+      </section>
+    )
 
   return (
     <section className="main-container px-4 space-y-6 flex flex-col">
@@ -76,7 +106,7 @@ function RouteComponent() {
           <SelectValue placeholder="Select a Schema" />
         </SelectTrigger>
         <SelectContent className="w-full">
-          {schemas.map((schema) => (
+          {schemas.map((schema: any) => (
             <SelectItem key={schema.name} value={schema.name}>
               {schema.name}
             </SelectItem>
@@ -94,15 +124,13 @@ function RouteComponent() {
         </SelectContent>
       </Select>
 
+      {/* Form to create new schema */}
       {isCreatingNew && (
         <div className="space-y-4 border rounded-xl p-4 bg-muted/20">
           <h2 className="font-semibold text-lg">Create New Schema</h2>
 
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleCreateNew)}
-              className="space-y-4"
-            >
+            <form onSubmit={form.handleSubmit(handleCreateNew)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -169,25 +197,32 @@ function RouteComponent() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Create</Button>
+                <Button type="submit" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? 'Creating...' : 'Create'}
+                </Button>
               </div>
             </form>
           </Form>
         </div>
       )}
 
-      {/* Schema Preview */}
-      {(name || url || Object.keys(body ?? {}).length > 0) && (
+      {/* Preview */}
+      {((name || url || Object.keys(body ?? {}).length > 0) && !isCreatingNew) ? (
         <div className="space-y-2 flex-1 flex flex-col">
           <h3 className="font-semibold text-lg">Schema Preview</h3>
           <pre className="p-3 rounded-md bg-muted text-sm overflow-auto max-h-[400px]">
             {JSON.stringify({ name, url, body }, null, 2)}
           </pre>
         </div>
-      )}
+      ) : <></>}
 
       <div className="flex justify-center mb-8">
-        <Button className="mt-2 w-full" onClick={() => navigate({ 'to': '/credential/capture' })}>Continue</Button>
+        <Button
+          className="mt-2 w-full"
+          onClick={() => navigate({ to: '/credential/capture' })}
+        >
+          Continue
+        </Button>
       </div>
     </section>
   )
