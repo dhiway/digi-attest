@@ -12,6 +12,11 @@ export const getSession = async () => {
   return res.data;
 };
 
+export const signOut = async () => {
+  const res = await api.post('/auth/sign-out');
+  return res.data;
+};
+
 export const requestOtp = async (email: string) => {
   const res = await api.post('/auth/unified-otp/request', { email });
   return res.data;
