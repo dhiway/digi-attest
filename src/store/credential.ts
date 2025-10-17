@@ -9,8 +9,8 @@ const credentialPhotoSchema = z.object({
 // Zod schema for credentialSchema
 export const credentialSchemaSchema = z.object({
   name: z.string(),
-  url: z.string().url().optional(),
-  body: z.any(), // JSON type can be any JS object
+  url: z.string().url().default('').optional(),
+  body: z.any().optional(),
   new: z.boolean().default(false).optional(),
 });
 
@@ -27,12 +27,7 @@ export const useCredentialPhotoStore = create<
 >((set) => ({
   url: null,
   setUrl: (state) => {
-    /* const validation = credentialPhotoSchema.safeParse(state);
-    if (validation.success) { */
     set(state);
-    /* } else {
-      console.error('Invalid URL for credentialPhoto:', validation.error);
-    } */
   },
 }));
 
@@ -42,7 +37,7 @@ export const useCredentialSchemaStore = create<
   }
 >((set) => ({
   name: '',
-  url: undefined,
+  url: '',
   body: {},
   new: false,
   setCredentialSchema: (state) => {

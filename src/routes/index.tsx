@@ -25,7 +25,7 @@ function Index() {
   useEffect(() => {
     if (data?.user) {
       setUser(data.user)
-      navigate({ to: '/profile/list' })
+      navigate({ to: '/organization/list' })
     }
   }, [data])
 

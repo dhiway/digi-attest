@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod/v3'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -29,33 +29,33 @@ type CredentialSchemaInput = z.infer<typeof credentialSchemaSchema>
 
 function RouteComponent() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { setCredentialSchema, name, url, body } = useCredentialSchemaStore()
   const [isCreatingNew, setIsCreatingNew] = useState(false)
 
-  // ✅ Fetch all schemas
-  const { data: schemas = [], isLoading } = useQuery({
+  const { data: schemas = [], isLoading, refetch } = useQuery({
     queryKey: ['schemas'],
     queryFn: getSchemas,
   })
 
-  // ✅ Create schema mutation
   const createMutation = useMutation({
     mutationFn: createSchema,
-    onSuccess: (newSchema) => {
-      queryClient.setQueryData(['schemas'], (old: any) => [...(old || []), newSchema])
+    onSuccess: async (newSchema) => {
+      refetch()
       setCredentialSchema({ ...newSchema, new: true })
       setIsCreatingNew(false)
       form.reset()
     },
+    onError: (err) => {
+      console.log("mutation error: ", err)
+    }
   })
 
   const form = useForm<CredentialSchemaInput>({
     resolver: zodResolver(credentialSchemaSchema.omit({ new: true })),
     defaultValues: {
       name: '',
-      url: undefined,
-      body: {},
+      url: '',
+      body: '',
     },
   })
 
@@ -64,21 +64,31 @@ function RouteComponent() {
     if (selected) {
       setCredentialSchema({
         name: selected.name,
-        url: selected.url || undefined,
+        url: selected.url || '',
         body: selected.body,
         new: false,
       })
     }
   }
 
+  const clearUI = () => {
+    setCredentialSchema({
+      name: "",
+      url: '',
+      body: '',
+      new: false,
+    })
+
+  }
+
   const handleCreateNew = (data: CredentialSchemaInput) => {
     try {
       let body = data.body
-      let url = typeof data.url === 'string' && data.url.trim().length > 0 ? data.url.trim() : undefined
+      let url = typeof data.url === 'string' && data.url.trim().length > 0 ? data.url.trim() : ''
 
-      if (typeof body !== 'object' && typeof body === "string" && !url) {
+      if (typeof body !== 'object' && !url) {
         if (body.trim().length === 0) {
-          throw Error('Invalid body and Missing Url')
+          return console.error('Invalid schema body and missing Url')
         }
         body = JSON.parse(body)
       }
@@ -89,7 +99,7 @@ function RouteComponent() {
         body: body,
         url: url,
       })
-    } catch (err: any) { console.error(err.message) }
+    } catch (err: any) { console.error("schema create error: ", err.message) }
   }
 
   if (isLoading)
@@ -100,8 +110,8 @@ function RouteComponent() {
     )
 
   return (
-    <section className="main-container px-4 space-y-6 flex flex-col">
-      <Select onValueChange={handleSelect}>
+    <section className="main-container px-4 py-8 space-y-6 flex flex-col">
+      <Select disabled={isCreatingNew} onValueChange={handleSelect}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a Schema" />
         </SelectTrigger>
@@ -111,16 +121,14 @@ function RouteComponent() {
               {schema.name}
             </SelectItem>
           ))}
-          <div className="border-t my-1" />
-          <div className="px-2 py-1">
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => setIsCreatingNew(true)}
-            >
-              + Add New Schema
-            </Button>
-          </div>
+          <SelectSeparator />
+          <SelectItem className='capitalize' key={'Button'} value={'Button'} onClick={() => {
+            clearUI()
+            setIsCreatingNew(true)
+          }}
+          >
+            + Add New Schema
+          </SelectItem>
         </SelectContent>
       </Select>
 
@@ -188,7 +196,7 @@ function RouteComponent() {
                 )}
               />
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2 justify-end mt-8">
                 <Button
                   type="button"
                   variant="secondary"
@@ -214,15 +222,16 @@ function RouteComponent() {
           </pre>
         </div>
       ) : <></>}
-
-      <div className="flex justify-center mb-8">
-        <Button
-          className="mt-2 w-full"
-          onClick={() => navigate({ to: '/credential/capture' })}
-        >
-          Continue
-        </Button>
-      </div>
+      {isCreatingNew ? <></> :
+        <div className="flex justify-center">
+          <Button
+            className="mt-2 w-full"
+            onClick={() => navigate({ to: '/credential/capture' })}
+          >
+            Continue
+          </Button>
+        </div>
+      }
     </section>
   )
 }
