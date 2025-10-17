@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/form'
 
 import { credentialSchemaSchema, useCredentialSchemaStore } from '@/store/credential'
-import { getSchemas, createSchema } from '@/lib/api'
+import { getSchemas, createSchema, type CreateSchemaResponse } from '@/lib/api'
 
 export const Route = createFileRoute('/schema/select/$orgId/$profileId')({
   component: RouteComponent,
@@ -39,9 +39,10 @@ function RouteComponent() {
 
   const createMutation = useMutation({
     mutationFn: createSchema,
-    onSuccess: async (newSchema) => {
+    onSuccess: async (newSchema: CreateSchemaResponse) => {
+      console.log(newSchema)
       refetch()
-      setCredentialSchema({ ...newSchema, new: true })
+      setCredentialSchema({ name: newSchema.name, url: newSchema.url || '', body: newSchema.body, new: true })
       setIsCreatingNew(false)
       form.reset()
     },
@@ -60,6 +61,11 @@ function RouteComponent() {
   })
 
   const handleSelect = (schemaName: string) => {
+    // the schemaName uuid is used to control add new schema button
+    if (schemaName === 'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8') {
+      clearUI()
+      setIsCreatingNew(true)
+    }
     const selected = schemas.find((s: any) => s.name === schemaName)
     if (selected) {
       setCredentialSchema({
@@ -111,7 +117,7 @@ function RouteComponent() {
 
   return (
     <section className="main-container px-4 py-8 space-y-6 flex flex-col">
-      <Select disabled={isCreatingNew} onValueChange={handleSelect}>
+      <Select disabled={isCreatingNew} onValueChange={handleSelect} value={name}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a Schema" />
         </SelectTrigger>
@@ -122,11 +128,7 @@ function RouteComponent() {
             </SelectItem>
           ))}
           <SelectSeparator />
-          <SelectItem className='capitalize' key={'Button'} value={'Button'} onClick={() => {
-            clearUI()
-            setIsCreatingNew(true)
-          }}
-          >
+          <SelectItem className='capitalize' key={'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8'} value={'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8'}>
             + Add New Schema
           </SelectItem>
         </SelectContent>
@@ -174,6 +176,7 @@ function RouteComponent() {
                     <FormLabel>Schema JSON Body</FormLabel>
                     <FormControl>
                       <Textarea
+                        className='select-text'
                         placeholder="Enter valid JSON schema"
                         rows={8}
                         value={
