@@ -1,60 +1,79 @@
-import { createRootRoute, Outlet, useNavigate } from '@tanstack/react-router'
+import { createRootRoute, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { useEffect } from 'react'
-import { useRouter } from '@tanstack/react-router';
-import { App as CapacitorApp } from '@capacitor/app';
-import { useMutation } from '@tanstack/react-query';
-import { signOut } from '@/lib/api';
-import { useUserStore } from '@/store/user';
-
-export function useBackButtonHandler() {
-}
+import { useEffect, useState } from 'react'
+import { App as CapacitorApp } from '@capacitor/app'
+import { useMutation } from '@tanstack/react-query'
+import { signOut } from '@/lib/api'
+import { useUserStore } from '@/store/user'
+import { CiLogin, CiLogout, CiSquareChevLeft } from "react-icons/ci"
 
 const RootLayout = () => {
-  const router = useRouter();
   const navigate = useNavigate()
   const { user } = useUserStore()
+  const [showButtons, setShowButtons] = useState(false)
+
+  const location = useRouterState({ select: (s) => s.location })
 
   const signOutUser = useMutation({
-    mutationFn: async () => { signOut() },
-    onSuccess: () => {
-      navigate({ to: '/' })
-    },
-    onError: () => {
-      navigate({ to: '/' })
-    },
+    mutationFn: async () => { await signOut() },
+    onSuccess: () => navigate({ to: '/' }),
+    onError: () => navigate({ to: '/' }),
   })
 
-
   async function goBack(event: any, callback: () => Promise<void>) {
-    if (router.history.canGoBack()) {
-      router.history.back();
-      event.preventDefault();
+    if (window.history.length > 1) {
+      window.history.back()
+      event.preventDefault()
     } else {
       await callback()
     }
   }
-  useEffect(() => {
-    const handler = CapacitorApp.addListener('backButton', (event: any) => {
 
+  useEffect(() => {
+    setShowButtons(location.pathname !== '/')
+
+    const handler = CapacitorApp.addListener('backButton', (event: any) => {
       goBack(event, CapacitorApp.exitApp)
-    });
+    })
 
     return () => {
-      handler.then((a) => a.remove());
+      handler.then((a) => a.remove())
+    }
+  }, [location.pathname])
+
+  useEffect(() => {
+    const setHeight = () => {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
     };
-  }, [router]);
+    window.addEventListener('resize', setHeight);
+    setHeight();
+    return () => window.removeEventListener('resize', setHeight);
+  }, []);
+
   return (
-    <main className='main-container' >
-      <div onClick={() => navigate({ to: '/' })} className='cursor-pointer px-6 py-4 h-16 justify-between items-center flex'>
-        <span onClick={(e) => { goBack(e, CapacitorApp.exitApp) }}>back</span>
-        <span className='text-2xl'>Logo</span>
-        <span onClick={() => signOutUser.mutateAsync()}>{user ? "logout" : " "}</span>
-      </div>
-      <Outlet />
+    <div>
+      <header
+        onClick={() => navigate({ to: '/' })}
+        className='cursor-pointer px-6 py-4 h-16 justify-between items-center flex'
+      >
+        {showButtons && (
+          <span onClick={(e) => goBack(e, CapacitorApp.exitApp)}>
+            <CiSquareChevLeft size={24} />
+          </span>
+        )}
+        <span className='text-2xl mx-auto'>Logo</span>
+        {showButtons && (
+          <span onClick={() => signOutUser.mutateAsync()}>
+            {user ? <CiLogout size={24} /> : <CiLogin size={24} />}
+          </span>
+        )}
+      </header>
+      <main className='main-container'>
+        <Outlet />
+      </main>
       <TanStackRouterDevtools position='bottom-right' />
-    </main>
+    </div>
   )
 }
-export const Route = createRootRoute({ component: RootLayout })
 
+export const Route = createRootRoute({ component: RootLayout })

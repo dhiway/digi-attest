@@ -3,10 +3,8 @@ import { ShadCNForm } from '@/components/RJSFShadCNForm'
 import validator from '@rjsf/validator-ajv8'
 import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
 import { useMutation } from '@tanstack/react-query'
-import axios from 'axios'
 import { useState } from 'react'
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1'
+import { createCredential } from '@/lib/api/credential'
 
 export const Route = createFileRoute('/credential/create')({
   component: RouteComponent,
@@ -18,17 +16,13 @@ function RouteComponent() {
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
 
-  const createCredential = useMutation({
+  const createCredentialMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const res = await axios.post(`${BASE_URL}/credential/create`, payload, { withCredentials: true })
-      return res.data
+      return await createCredential(payload)
     },
-    onSuccess: (data) => {
-      const created = data?.data?.credential
-      if (created) {
-        setCredential(created)
-        /* toast?.success('Credential created successfully') */
-      }
+    onSuccess: (created) => {
+      setCredential(created)
+      /* toast?.success('Credential created successfully') */
     },
     onError: (err: any) => {
       console.error('Error creating credential:', err)
@@ -52,7 +46,7 @@ function RouteComponent() {
         imageUrl,
       }
 
-      await createCredential.mutateAsync(payload)
+      await createCredentialMutation.mutateAsync(payload)
     } finally {
       setLoading(false)
     }

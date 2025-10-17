@@ -11,11 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SchemaSelectRouteImport } from './routes/schema.select'
-import { Route as ProfileListRouteImport } from './routes/profile.list'
 import { Route as ProfileCreateRouteImport } from './routes/profile.create'
+import { Route as OrganizationListRouteImport } from './routes/organization.list'
 import { Route as CredentialListRouteImport } from './routes/credential.list'
 import { Route as CredentialCreateRouteImport } from './routes/credential.create'
 import { Route as CredentialCaptureRouteImport } from './routes/credential.capture'
+import { Route as ProfileListOrgIdRouteImport } from './routes/profile.list.$orgId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -27,14 +28,14 @@ const SchemaSelectRoute = SchemaSelectRouteImport.update({
   path: '/schema/select',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileListRoute = ProfileListRouteImport.update({
-  id: '/profile/list',
-  path: '/profile/list',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProfileCreateRoute = ProfileCreateRouteImport.update({
   id: '/profile/create',
   path: '/profile/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizationListRoute = OrganizationListRouteImport.update({
+  id: '/organization/list',
+  path: '/organization/list',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CredentialListRoute = CredentialListRouteImport.update({
@@ -52,24 +53,31 @@ const CredentialCaptureRoute = CredentialCaptureRouteImport.update({
   path: '/credential/capture',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileListOrgIdRoute = ProfileListOrgIdRouteImport.update({
+  id: '/profile/list/$orgId',
+  path: '/profile/list/$orgId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/credential/capture': typeof CredentialCaptureRoute
   '/credential/create': typeof CredentialCreateRoute
   '/credential/list': typeof CredentialListRoute
+  '/organization/list': typeof OrganizationListRoute
   '/profile/create': typeof ProfileCreateRoute
-  '/profile/list': typeof ProfileListRoute
   '/schema/select': typeof SchemaSelectRoute
+  '/profile/list/$orgId': typeof ProfileListOrgIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/credential/capture': typeof CredentialCaptureRoute
   '/credential/create': typeof CredentialCreateRoute
   '/credential/list': typeof CredentialListRoute
+  '/organization/list': typeof OrganizationListRoute
   '/profile/create': typeof ProfileCreateRoute
-  '/profile/list': typeof ProfileListRoute
   '/schema/select': typeof SchemaSelectRoute
+  '/profile/list/$orgId': typeof ProfileListOrgIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +85,10 @@ export interface FileRoutesById {
   '/credential/capture': typeof CredentialCaptureRoute
   '/credential/create': typeof CredentialCreateRoute
   '/credential/list': typeof CredentialListRoute
+  '/organization/list': typeof OrganizationListRoute
   '/profile/create': typeof ProfileCreateRoute
-  '/profile/list': typeof ProfileListRoute
   '/schema/select': typeof SchemaSelectRoute
+  '/profile/list/$orgId': typeof ProfileListOrgIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +97,30 @@ export interface FileRouteTypes {
     | '/credential/capture'
     | '/credential/create'
     | '/credential/list'
+    | '/organization/list'
     | '/profile/create'
-    | '/profile/list'
     | '/schema/select'
+    | '/profile/list/$orgId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/credential/capture'
     | '/credential/create'
     | '/credential/list'
+    | '/organization/list'
     | '/profile/create'
-    | '/profile/list'
     | '/schema/select'
+    | '/profile/list/$orgId'
   id:
     | '__root__'
     | '/'
     | '/credential/capture'
     | '/credential/create'
     | '/credential/list'
+    | '/organization/list'
     | '/profile/create'
-    | '/profile/list'
     | '/schema/select'
+    | '/profile/list/$orgId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,9 +128,10 @@ export interface RootRouteChildren {
   CredentialCaptureRoute: typeof CredentialCaptureRoute
   CredentialCreateRoute: typeof CredentialCreateRoute
   CredentialListRoute: typeof CredentialListRoute
+  OrganizationListRoute: typeof OrganizationListRoute
   ProfileCreateRoute: typeof ProfileCreateRoute
-  ProfileListRoute: typeof ProfileListRoute
   SchemaSelectRoute: typeof SchemaSelectRoute
+  ProfileListOrgIdRoute: typeof ProfileListOrgIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -137,18 +150,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchemaSelectRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile/list': {
-      id: '/profile/list'
-      path: '/profile/list'
-      fullPath: '/profile/list'
-      preLoaderRoute: typeof ProfileListRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/profile/create': {
       id: '/profile/create'
       path: '/profile/create'
       fullPath: '/profile/create'
       preLoaderRoute: typeof ProfileCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organization/list': {
+      id: '/organization/list'
+      path: '/organization/list'
+      fullPath: '/organization/list'
+      preLoaderRoute: typeof OrganizationListRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/credential/list': {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CredentialCaptureRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/list/$orgId': {
+      id: '/profile/list/$orgId'
+      path: '/profile/list/$orgId'
+      fullPath: '/profile/list/$orgId'
+      preLoaderRoute: typeof ProfileListOrgIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -180,9 +200,10 @@ const rootRouteChildren: RootRouteChildren = {
   CredentialCaptureRoute: CredentialCaptureRoute,
   CredentialCreateRoute: CredentialCreateRoute,
   CredentialListRoute: CredentialListRoute,
+  OrganizationListRoute: OrganizationListRoute,
   ProfileCreateRoute: ProfileCreateRoute,
-  ProfileListRoute: ProfileListRoute,
   SchemaSelectRoute: SchemaSelectRoute,
+  ProfileListOrgIdRoute: ProfileListOrgIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

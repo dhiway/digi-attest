@@ -13,14 +13,14 @@ import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { z } from "zod/v3"
 import { zodResolver } from "@hookform/resolvers/zod"
-''
+import { useMutation } from '@tanstack/react-query'
+import { createProfile } from '@/lib/api'
 
 // Define the schema with zod including the additional fields
 const profileSchema = z.object({
   logourl: z.string().url("Invalid URL").or(z.string().length(0)).optional(),
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
 })
 
 type ProfileForm = z.infer<typeof profileSchema>
@@ -31,26 +31,45 @@ export const Route = createFileRoute('/profile/create')({
 
 function RouteComponent() {
   const navigate = useNavigate()
+
+  const createProfileForUser = useMutation({
+    mutationFn: async (data: ProfileForm) => {
+      const profileBody = {
+        type: "holder",
+        orgId: "00d437f0-c57c-4647-a89d-a96668315f38",
+        metadata: {
+          name: data.name,
+          logo: data.logourl
+        },
+        contact: {
+          tag: data.email,
+          email: data.email,
+          phoneNumber: ["9999999999"]
+        }
+      }
+      return await createProfile(profileBody as any)
+    },
+    onSuccess: async () => {
+      navigate({ to: '/profile/list' })
+    },
+    onError: async (err) => {
+      console.log(err)
+    }
+  })
+
   // Initialize react-hook-form with zod resolver and schema
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: "",
       email: "",
-      dateOfBirth: "",
     },
   })
-
-  function onSubmit(data: ProfileForm) {
-    console.log("Form Data:", data)
-    navigate({ to: '/profile/list' })
-    // handle the form submission logic here
-  }
 
   return (
     <div className='main-container overflow-hidden px-4'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit((e) => createProfileForUser.mutateAsync(e))} className="space-y-8">
           <FormField
             control={form.control}
             name="logourl"
@@ -89,20 +108,6 @@ function RouteComponent() {
                   <Input type="email" placeholder="email@example.com" {...field} />
                 </FormControl>
                 <FormDescription>We'll never share your email.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="dateOfBirth"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date of Birth</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormDescription>Your birth date.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

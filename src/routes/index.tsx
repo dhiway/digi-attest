@@ -32,11 +32,11 @@ function Index() {
   if (isLoading) return <p>Loading...</p>
 
   return (
-    <section className="main-container flex justify-center items-center min-h-screen">
+    <section className="main-container flex justify-center items-center">
       {hasUser === null ? (
         <RequestOtpForm setHasUser={setHasUser} setEmail={setEmail} />
       ) : (
-        <VerifyOtpForm hasUser={hasUser} email={email} />
+        <VerifyOtpForm setHasUser={setHasUser} hasUser={hasUser} email={email} />
       )}
     </section>
   )

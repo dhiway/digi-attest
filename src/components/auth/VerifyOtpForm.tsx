@@ -5,13 +5,15 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useUserStore } from '@/store/user'
 import { useNavigate } from '@tanstack/react-router'
+import { CiCircleChevLeft } from 'react-icons/ci'
 
 interface Props {
+  setHasUser: (prop: boolean | null) => void
   hasUser: boolean
   email: string
 }
 
-export function VerifyOtpForm({ hasUser, email }: Props) {
+export function VerifyOtpForm({ hasUser, email, setHasUser }: Props) {
   const [otp, setOtp] = useState('')
   const [name, setName] = useState('')
   const setUser = useUserStore((s) => s.setUser)
@@ -21,7 +23,7 @@ export function VerifyOtpForm({ hasUser, email }: Props) {
     mutationFn: verifyOtp,
     onSuccess: (data) => {
       setUser({ ...data.user, token: data.token })
-      navigate({ to: '/profile/list' })
+      navigate({ to: '/organization/list' })
     },
     onError: (err: any) => {
       alert(err.response?.data?.message || 'Something went wrong')
@@ -58,9 +60,19 @@ export function VerifyOtpForm({ hasUser, email }: Props) {
         value={otp}
         onChange={(e) => setOtp(e.target.value)}
       />
-      <Button className="w-full" onClick={handleSubmit} disabled={mutation.isPending}>
-        {mutation.isPending ? 'Verifying...' : 'Verify OTP'}
-      </Button>
+
+      <div className='flex justify-end gap-4 w-full ' >
+        <Button
+          onClick={() => setHasUser(null)}
+          className="w-max"
+          disabled={mutation.isPending}
+        >
+          <CiCircleChevLeft size={24} />
+        </Button>
+        <Button className="w-3/4" onClick={handleSubmit} disabled={mutation.isPending}>
+          {mutation.isPending ? 'Verifying...' : 'Verify OTP'}
+        </Button>
+      </div>
     </div>
   )
 }
