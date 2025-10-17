@@ -9,7 +9,7 @@ const credentialPhotoSchema = z.object({
 // Zod schema for credentialSchema
 export const credentialSchemaSchema = z.object({
   name: z.string(),
-  url: z.string().url().default('').optional(),
+  url: z.string().url().or(z.string()).default('').optional(),
   body: z.any().optional(),
   new: z.boolean().default(false).optional(),
 });
