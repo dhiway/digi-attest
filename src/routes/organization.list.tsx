@@ -1,7 +1,7 @@
+import ListSkeleton from '@/components/listSkeleton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { Skeleton } from '@/components/ui/skeleton'
 import { listOrganizations } from '@/lib/api/organization'
 import type { Organization } from '@/lib/api/organization/types'
 import { useOrganizationStore } from '@/store/user'
@@ -34,16 +34,7 @@ function RouteComponent() {
   return <div className='main-container px-4 py-8 flex flex-col'>
 
     <section id='org-list' className='flex flex-col flex-1 gap-4 overflow-scroll'>
-      {isLoading ?
-        <Card className="flex items-center space-x-4">
-          <CardContent className='flex gap-4'>
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-          </CardContent>
-        </Card>
+      {isLoading ? <ListSkeleton />
         :
         data && data.map(org =>
           <Card onClick={() => selectOrganization(org)}>
@@ -70,6 +61,6 @@ function RouteComponent() {
         </Empty>
         : <></>}
     </section>
-    <Button>Add Organization</Button>
+    <Button onClick={() => navigate({ to: '/organization/create' })}>Add Organization</Button>
   </div>
 }

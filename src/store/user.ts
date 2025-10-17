@@ -1,3 +1,4 @@
+import type { UserProfile } from '@/lib/api';
 import type { Organization } from '@/lib/api/organization/types';
 import { create } from 'zustand';
 
@@ -20,6 +21,12 @@ interface OrganizationState {
   clearOrganization: () => void;
 }
 
+interface ProfileState {
+  profile: UserProfile | null;
+  setActiveProfile: (profile: UserProfile) => void;
+  clearProfile: () => void;
+}
+
 export const useUserStore = create<UserState>((set) => ({
   user: null,
   setUser: (user) => set({ user }),
@@ -30,4 +37,10 @@ export const useOrganizationStore = create<OrganizationState>((set) => ({
   organization: null,
   setActiveOrganization: (organization) => set({ organization }),
   clearOrganization: () => set({ organization: null }),
+}));
+
+export const useProfileStore = create<ProfileState>((set) => ({
+  profile: null,
+  setActiveProfile: (profile) => set({ profile }),
+  clearProfile: () => set({ profile: null }),
 }));

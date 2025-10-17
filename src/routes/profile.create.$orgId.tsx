@@ -1,9 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -11,46 +10,42 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
-import { z } from "zod/v3"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from '@tanstack/react-query'
-import { createProfile } from '@/lib/api'
+import { createProfile, type CreateUserProfileInput } from '@/lib/api'
+import { z } from 'zod/v3'
 
-// Define the schema with zod including the additional fields
-const profileSchema = z.object({
-  logourl: z.string().url("Invalid URL").or(z.string().length(0)).optional(),
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-})
-
-type ProfileForm = z.infer<typeof profileSchema>
-
-export const Route = createFileRoute('/profile/create')({
+export const Route = createFileRoute('/profile/create/$orgId')({
   component: RouteComponent,
 })
 
+const ProfileFormSchema = z.object({
+  name: z.string(),
+  phoneNumber: z.string().length(10),
+  email: z.string().email()
+})
+
+type ProfileForm = z.infer<typeof ProfileFormSchema>
+
 function RouteComponent() {
+  const { orgId } = useParams({ from: '/profile/create/$orgId' })
   const navigate = useNavigate()
 
   const createProfileForUser = useMutation({
     mutationFn: async (data: ProfileForm) => {
-      const profileBody = {
-        type: "holder",
-        orgId: "00d437f0-c57c-4647-a89d-a96668315f38",
-        metadata: {
-          name: data.name,
-          logo: data.logourl
-        },
-        contact: {
-          tag: data.email,
-          email: data.email,
-          phoneNumber: ["9999999999"]
-        }
+      const profileData: CreateUserProfileInput = {
+        name: data.name,
+        phoneNumber: [data.phoneNumber],
+        email: data.email,
+        type: 'holder',
+        metadata: {},
+        orgId: orgId,
+        website: null
       }
-      return await createProfile(profileBody as any)
+      return await createProfile(profileData, orgId)
     },
     onSuccess: async () => {
-      navigate({ to: '/profile/list' })
+      navigate({ to: `/profile/list/${orgId}` })
     },
     onError: async (err) => {
       console.log(err)
@@ -59,27 +54,31 @@ function RouteComponent() {
 
   // Initialize react-hook-form with zod resolver and schema
   const form = useForm<ProfileForm>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(ProfileFormSchema),
     defaultValues: {
       name: "",
       email: "",
+      phoneNumber: '',
     },
   })
 
   return (
-    <div className='main-container overflow-hidden px-4'>
+    <div className='main-container overflow-hidden px-4 py-8'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit((e) => createProfileForUser.mutateAsync(e))} className="space-y-8">
           <FormField
             control={form.control}
-            name="logourl"
+            name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Logo URL</FormLabel>
-                <FormControl>
-                  <Input type="url" placeholder="https://example.com/logo.png" {...field} />
+                <FormLabel>Phone</FormLabel>
+                <FormControl >
+                  <div className='relative'>
+                    <Input className='pl-12 py-5' type="number" placeholder="9999999999" {...field}
+                    />
+                    <p className='text-gray-500 pt-[1px] pr-2 flex items-center absolute left-2 top-0 bottom-0 border-r'>+91</p>
+                  </div>
                 </FormControl>
-                <FormDescription>Provide a URL to your logo image.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -90,10 +89,9 @@ function RouteComponent() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
-                <FormControl>
+                <FormControl >
                   <Input placeholder="Full Name" {...field} />
                 </FormControl>
-                <FormDescription>Your full name.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -107,7 +105,6 @@ function RouteComponent() {
                 <FormControl>
                   <Input type="email" placeholder="email@example.com" {...field} />
                 </FormControl>
-                <FormDescription>We'll never share your email.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

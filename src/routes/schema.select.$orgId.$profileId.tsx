@@ -21,7 +21,7 @@ import {
 import { credentialSchemaSchema, useCredentialSchemaStore } from '@/store/credential'
 import { getSchemas, createSchema } from '@/lib/api'
 
-export const Route = createFileRoute('/schema/select')({
+export const Route = createFileRoute('/schema/select/$orgId/$profileId')({
   component: RouteComponent,
 })
 
