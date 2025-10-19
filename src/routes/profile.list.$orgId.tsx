@@ -38,7 +38,7 @@ function RouteComponent() {
         }
         <section className='flex flex-col gap-4'>
           {data && data.map((profile) => {
-            return <Card className='px-4 py-5' onClick={() => profileSelected(profile)}>
+            return <Card key={profile.id} className='px-4 py-5' onClick={() => profileSelected(profile)}>
               <CardHeader>
                 <CardTitle className='capitalize'>{profile.name}</CardTitle>
                 <CardDescription className='lowercase'>{profile.email || ''}</CardDescription>

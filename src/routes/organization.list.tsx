@@ -37,7 +37,7 @@ function RouteComponent() {
       {isLoading ? <ListSkeleton />
         :
         data && data.map(org =>
-          <Card onClick={() => selectOrganization(org)}>
+          <Card key={org.id} onClick={() => selectOrganization(org)}>
             <CardContent className='flex space-x-4 justify-between'>
               {z.safeParse(z.url(), org.logo).success ?
                 <img alt='logo' src={org.logo} />
