@@ -17,6 +17,7 @@
     "@capacitor/ios": "^7.4.3",
     "@capacitor/status-bar": "^7.0.3",
     "@hookform/resolvers": "^5.2.2",
+    "@ionic/pwa-elements": "^3.3.0",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.7",
