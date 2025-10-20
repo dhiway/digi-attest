@@ -61,6 +61,6 @@ function RouteComponent() {
         </Empty>
         : <></>}
     </section>
-    <Button onClick={() => navigate({ to: '/organization/create' })}>Add Organization</Button>
+    <Button disabled onClick={() => navigate({ to: '/organization/create' })}>Add Organization</Button>
   </div>
 }

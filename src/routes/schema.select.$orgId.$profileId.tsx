@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,6 +31,7 @@ function RouteComponent() {
   const navigate = useNavigate()
   const { setCredentialSchema, name, url, body } = useCredentialSchemaStore()
   const [isCreatingNew, setIsCreatingNew] = useState(false)
+  const { profileId, orgId } = useParams({ from: '/schema/select/$orgId/$profileId' })
 
   const { data: schemas = [], isLoading, refetch } = useQuery({
     queryKey: ['schemas'],
@@ -54,9 +55,9 @@ function RouteComponent() {
   const form = useForm<CredentialSchemaInput>({
     resolver: zodResolver(credentialSchemaSchema.omit({ new: true })),
     defaultValues: {
-      name: '',
-      url: '',
-      body: '',
+      name: undefined,
+      url: undefined,
+      body: undefined,
     },
   })
 
@@ -116,125 +117,146 @@ function RouteComponent() {
     )
 
   return (
-    <section className="main-container px-4 py-8 space-y-6 flex flex-col">
-      <Select disabled={isCreatingNew} onValueChange={handleSelect} value={name}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a Schema" />
-        </SelectTrigger>
-        <SelectContent className="w-full">
-          {schemas.map((schema: any) => (
-            <SelectItem key={schema.name} value={schema.name}>
-              {schema.name}
+    <section className="main-container px-4 py-8 flex flex-col">
+      <div className="flex-1 flex flex-col gap-4 min-h-0">
+        <Select disabled={isCreatingNew} onValueChange={handleSelect} value={name}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a Schema" />
+          </SelectTrigger>
+          <SelectContent className="w-full">
+            {schemas.map((schema: any) => (
+              <SelectItem key={schema.name} value={schema.name}>
+                {schema.name}
+              </SelectItem>
+            ))}
+            <SelectSeparator />
+            <SelectItem
+              className="capitalize"
+              key="c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8"
+              value="c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8"
+            >
+              + Add New Schema
             </SelectItem>
-          ))}
-          <SelectSeparator />
-          <SelectItem className='capitalize' key={'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8'} value={'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8'}>
-            + Add New Schema
-          </SelectItem>
-        </SelectContent>
-      </Select>
+          </SelectContent>
+        </Select>
 
-      {/* Form to create new schema */}
-      {isCreatingNew && (
-        <div className="space-y-4 border rounded-xl p-4 bg-muted/20">
-          <h2 className="font-semibold text-lg">Create New Schema</h2>
+        {/* Form to create new schema */}
+        {isCreatingNew && (
+          <div className="space-y-4 border rounded-xl p-4 bg-muted/20 overflow-auto flex-1 min-h-0">
+            <h2 className="font-semibold text-lg">Create New Schema</h2>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreateNew)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter schema name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema URL (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(handleCreateNew)}
+                className="space-y-4 flex flex-col"
+              >
+                {/* Schema Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Schema Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter schema name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="body"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema JSON Body</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className='select-text'
-                        placeholder="Enter valid JSON schema"
-                        rows={8}
-                        value={
-                          typeof field.value === 'string'
-                            ? field.value
-                            : JSON.stringify(field.value, null, 2)
-                        }
-                        onChange={(e) => {
-                          try {
-                            const parsed = JSON.parse(e.target.value)
-                            field.onChange(parsed)
-                          } catch {
-                            field.onChange(e.target.value)
+                {/* Schema URL */}
+                <FormField
+                  control={form.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Schema URL (optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Schema JSON Body */}
+                <FormField
+                  control={form.control}
+                  name="body"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col min-h-0">
+                      <FormLabel>Schema JSON Body</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          className="select-text h-[250px]"
+                          placeholder="Enter valid JSON schema"
+                          rows={8}
+                          value={
+                            typeof field.value === 'string'
+                              ? field.value
+                              : JSON.stringify(field.value, null, 2)
                           }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                          onChange={(e) => {
+                            try {
+                              const parsed = JSON.parse(e.target.value)
+                              field.onChange(parsed)
+                            } catch {
+                              field.onChange(e.target.value)
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex gap-2 justify-end mt-8">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsCreatingNew(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Creating...' : 'Create'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      )}
+                {/* Buttons */}
+                <div className="flex gap-2 justify-end mt-8">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsCreatingNew(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? 'Creating...' : 'Create'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        )}
 
-      {/* Preview */}
-      {((name || url || Object.keys(body ?? {}).length > 0) && !isCreatingNew) ? (
-        <div className="space-y-2 flex-1 flex flex-col">
-          <h3 className="font-semibold text-lg">Schema Preview</h3>
-          <pre className="p-3 rounded-md bg-muted text-sm overflow-auto max-h-[400px]">
-            {JSON.stringify({ name, url, body }, null, 2)}
-          </pre>
-        </div>
-      ) : <></>}
-      {isCreatingNew ? <></> :
-        <div className="flex justify-center">
+        {/* Schema Preview */}
+        {!isCreatingNew && (name || url || Object.keys(body ?? {}).length > 0) ? (
+          <div className="flex flex-col flex-1 min-h-0">
+            <h3 className="font-semibold text-lg mb-2">Schema Preview</h3>
+            <div className="flex-1 min-h-0">
+              <pre className="h-full p-3 rounded-md bg-muted text-sm overflow-auto">
+                {JSON.stringify({ name, url, body }, null, 2)}
+              </pre>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Sticky footer area */}
+      {!isCreatingNew && (
+        <div className="pt-4">
           <Button
-            className="mt-2 w-full"
-            onClick={() => navigate({ to: '/credential/capture' })}
+            disabled={name.length < 3}
+            className="w-full"
+            onClick={() =>
+              navigate({ to: `/credential/capture/${orgId}/${profileId}` })
+            }
           >
             Continue
           </Button>
         </div>
-      }
+      )}
     </section>
   )
+
 }

@@ -6,8 +6,6 @@ import "./index.css"
 import { routeTree } from './routeTree.gen'
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
-defineCustomElements(window);
-
 const router = createRouter({ routeTree })
 const queryClient = new QueryClient()
 
@@ -28,3 +26,7 @@ if (!rootElement.innerHTML) {
     </StrictMode>,
   )
 }
+
+setTimeout(() => {
+  defineCustomElements(window);
+}, 0);

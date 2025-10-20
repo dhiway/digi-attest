@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { signOut } from '@/lib/api'
 import { useUserStore } from '@/store/user'
 import { CiLogin, CiLogout, CiSquareChevLeft } from "react-icons/ci"
+import { Toaster } from "@/components/ui/sonner"
 
 const RootLayout = () => {
   const navigate = useNavigate()
@@ -69,6 +70,7 @@ const RootLayout = () => {
         )}
       </header>
       <main className='main-container'>
+        <Toaster visibleToasts={1} position='bottom-right' />
         <Outlet />
       </main>
       <TanStackRouterDevtools position='bottom-right' />
