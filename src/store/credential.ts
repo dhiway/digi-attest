@@ -8,6 +8,7 @@ const credentialPhotoSchema = z.object({
 
 // Zod schema for credentialSchema
 export const credentialSchemaSchema = z.object({
+  id: z.string().uuid().nullable().optional(),
   name: z.string().min(3),
   url: z.string().url().or(z.string()).default('').optional(),
   body: z.any().optional(),
@@ -36,6 +37,7 @@ export const useCredentialSchemaStore = create<
     setCredentialSchema: (state: Partial<CredentialSchema>) => void;
   }
 >((set) => ({
+  id: null,
   name: '',
   url: '',
   body: {},

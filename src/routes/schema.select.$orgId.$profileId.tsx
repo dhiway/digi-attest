@@ -43,7 +43,7 @@ function RouteComponent() {
     onSuccess: async (newSchema: CreateSchemaResponse) => {
       console.log(newSchema)
       refetch()
-      setCredentialSchema({ name: newSchema.name, url: newSchema.url || '', body: newSchema.body, new: true })
+      setCredentialSchema({ id: newSchema.id, name: newSchema.name, url: newSchema.url || '', body: newSchema.body, new: true })
       setIsCreatingNew(false)
       form.reset()
     },
@@ -70,6 +70,7 @@ function RouteComponent() {
     const selected = schemas.find((s: any) => s.name === schemaName)
     if (selected) {
       setCredentialSchema({
+        id: selected.id,
         name: selected.name,
         url: selected.url || '',
         body: selected.body,
@@ -80,6 +81,7 @@ function RouteComponent() {
 
   const clearUI = () => {
     setCredentialSchema({
+      id: null,
       name: "",
       url: '',
       body: '',

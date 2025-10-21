@@ -1,10 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useParams } from '@tanstack/react-router'
 import { ShadCNForm } from '@/components/RJSFShadCNForm'
 import validator from '@rjsf/validator-ajv8'
 import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { createCredential } from '@/lib/api/credential'
+import { createCredential, type Credential } from '@/lib/api/credential'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
@@ -12,14 +12,16 @@ export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
 })
 
 function RouteComponent() {
+  const { orgId, profileId } = useParams({ from: '/credential/create/$orgId/$profileId' })
   const { body } = useCredentialSchemaStore()
   const { key: credentialImageKey } = useCredentialPhotoStore()
+  const { id: schemaId, name: schemaName } = useCredentialSchemaStore()
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
 
   const createCredentialMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      return await createCredential(payload)
+    mutationFn: async (payload: Credential) => {
+      return await createCredential({ orgId, data: payload })
     },
     onSuccess: (created) => {
       setCredential(created)
@@ -38,11 +40,14 @@ function RouteComponent() {
     }
 
     setLoading(true)
+
     try {
       const payload = {
-        name: 'Aadhar',
+        name: schemaName,
+        orgId,
+        profileId,
         data: formData,
-        schemaId: 'fe98f3ab-fee9-4c80-8ea0-6a4e5c70f104',
+        schemaId: schemaId!,
         imageUrl: credentialImageKey,
       }
 
