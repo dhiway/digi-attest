@@ -12,11 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrganizationListRouteImport } from './routes/organization.list'
 import { Route as OrganizationCreateRouteImport } from './routes/organization.create'
-import { Route as CredentialListRouteImport } from './routes/credential.list'
 import { Route as ProfileListOrgIdRouteImport } from './routes/profile.list.$orgId'
 import { Route as ProfileCreateOrgIdRouteImport } from './routes/profile.create.$orgId'
 import { Route as CredentialViewOrgIdRouteImport } from './routes/credential.view.$orgId'
 import { Route as SchemaSelectOrgIdProfileIdRouteImport } from './routes/schema.select.$orgId.$profileId'
+import { Route as CredentialListOrgIdProfileIdRouteImport } from './routes/credential.list.$orgId.$profileId'
 import { Route as CredentialCreateOrgIdProfileIdRouteImport } from './routes/credential.create.$orgId.$profileId'
 import { Route as CredentialCaptureOrgIdProfileIdRouteImport } from './routes/credential.capture.$orgId.$profileId'
 
@@ -33,11 +33,6 @@ const OrganizationListRoute = OrganizationListRouteImport.update({
 const OrganizationCreateRoute = OrganizationCreateRouteImport.update({
   id: '/organization/create',
   path: '/organization/create',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CredentialListRoute = CredentialListRouteImport.update({
-  id: '/credential/list',
-  path: '/credential/list',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileListOrgIdRoute = ProfileListOrgIdRouteImport.update({
@@ -61,6 +56,12 @@ const SchemaSelectOrgIdProfileIdRoute =
     path: '/schema/select/$orgId/$profileId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CredentialListOrgIdProfileIdRoute =
+  CredentialListOrgIdProfileIdRouteImport.update({
+    id: '/credential/list/$orgId/$profileId',
+    path: '/credential/list/$orgId/$profileId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CredentialCreateOrgIdProfileIdRoute =
   CredentialCreateOrgIdProfileIdRouteImport.update({
     id: '/credential/create/$orgId/$profileId',
@@ -76,7 +77,6 @@ const CredentialCaptureOrgIdProfileIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/credential/list': typeof CredentialListRoute
   '/organization/create': typeof OrganizationCreateRoute
   '/organization/list': typeof OrganizationListRoute
   '/credential/view/$orgId': typeof CredentialViewOrgIdRoute
@@ -84,11 +84,11 @@ export interface FileRoutesByFullPath {
   '/profile/list/$orgId': typeof ProfileListOrgIdRoute
   '/credential/capture/$orgId/$profileId': typeof CredentialCaptureOrgIdProfileIdRoute
   '/credential/create/$orgId/$profileId': typeof CredentialCreateOrgIdProfileIdRoute
+  '/credential/list/$orgId/$profileId': typeof CredentialListOrgIdProfileIdRoute
   '/schema/select/$orgId/$profileId': typeof SchemaSelectOrgIdProfileIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/credential/list': typeof CredentialListRoute
   '/organization/create': typeof OrganizationCreateRoute
   '/organization/list': typeof OrganizationListRoute
   '/credential/view/$orgId': typeof CredentialViewOrgIdRoute
@@ -96,12 +96,12 @@ export interface FileRoutesByTo {
   '/profile/list/$orgId': typeof ProfileListOrgIdRoute
   '/credential/capture/$orgId/$profileId': typeof CredentialCaptureOrgIdProfileIdRoute
   '/credential/create/$orgId/$profileId': typeof CredentialCreateOrgIdProfileIdRoute
+  '/credential/list/$orgId/$profileId': typeof CredentialListOrgIdProfileIdRoute
   '/schema/select/$orgId/$profileId': typeof SchemaSelectOrgIdProfileIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/credential/list': typeof CredentialListRoute
   '/organization/create': typeof OrganizationCreateRoute
   '/organization/list': typeof OrganizationListRoute
   '/credential/view/$orgId': typeof CredentialViewOrgIdRoute
@@ -109,13 +109,13 @@ export interface FileRoutesById {
   '/profile/list/$orgId': typeof ProfileListOrgIdRoute
   '/credential/capture/$orgId/$profileId': typeof CredentialCaptureOrgIdProfileIdRoute
   '/credential/create/$orgId/$profileId': typeof CredentialCreateOrgIdProfileIdRoute
+  '/credential/list/$orgId/$profileId': typeof CredentialListOrgIdProfileIdRoute
   '/schema/select/$orgId/$profileId': typeof SchemaSelectOrgIdProfileIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/credential/list'
     | '/organization/create'
     | '/organization/list'
     | '/credential/view/$orgId'
@@ -123,11 +123,11 @@ export interface FileRouteTypes {
     | '/profile/list/$orgId'
     | '/credential/capture/$orgId/$profileId'
     | '/credential/create/$orgId/$profileId'
+    | '/credential/list/$orgId/$profileId'
     | '/schema/select/$orgId/$profileId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/credential/list'
     | '/organization/create'
     | '/organization/list'
     | '/credential/view/$orgId'
@@ -135,11 +135,11 @@ export interface FileRouteTypes {
     | '/profile/list/$orgId'
     | '/credential/capture/$orgId/$profileId'
     | '/credential/create/$orgId/$profileId'
+    | '/credential/list/$orgId/$profileId'
     | '/schema/select/$orgId/$profileId'
   id:
     | '__root__'
     | '/'
-    | '/credential/list'
     | '/organization/create'
     | '/organization/list'
     | '/credential/view/$orgId'
@@ -147,12 +147,12 @@ export interface FileRouteTypes {
     | '/profile/list/$orgId'
     | '/credential/capture/$orgId/$profileId'
     | '/credential/create/$orgId/$profileId'
+    | '/credential/list/$orgId/$profileId'
     | '/schema/select/$orgId/$profileId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CredentialListRoute: typeof CredentialListRoute
   OrganizationCreateRoute: typeof OrganizationCreateRoute
   OrganizationListRoute: typeof OrganizationListRoute
   CredentialViewOrgIdRoute: typeof CredentialViewOrgIdRoute
@@ -160,6 +160,7 @@ export interface RootRouteChildren {
   ProfileListOrgIdRoute: typeof ProfileListOrgIdRoute
   CredentialCaptureOrgIdProfileIdRoute: typeof CredentialCaptureOrgIdProfileIdRoute
   CredentialCreateOrgIdProfileIdRoute: typeof CredentialCreateOrgIdProfileIdRoute
+  CredentialListOrgIdProfileIdRoute: typeof CredentialListOrgIdProfileIdRoute
   SchemaSelectOrgIdProfileIdRoute: typeof SchemaSelectOrgIdProfileIdRoute
 }
 
@@ -184,13 +185,6 @@ declare module '@tanstack/react-router' {
       path: '/organization/create'
       fullPath: '/organization/create'
       preLoaderRoute: typeof OrganizationCreateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/credential/list': {
-      id: '/credential/list'
-      path: '/credential/list'
-      fullPath: '/credential/list'
-      preLoaderRoute: typeof CredentialListRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/list/$orgId': {
@@ -221,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchemaSelectOrgIdProfileIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/credential/list/$orgId/$profileId': {
+      id: '/credential/list/$orgId/$profileId'
+      path: '/credential/list/$orgId/$profileId'
+      fullPath: '/credential/list/$orgId/$profileId'
+      preLoaderRoute: typeof CredentialListOrgIdProfileIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/credential/create/$orgId/$profileId': {
       id: '/credential/create/$orgId/$profileId'
       path: '/credential/create/$orgId/$profileId'
@@ -240,7 +241,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CredentialListRoute: CredentialListRoute,
   OrganizationCreateRoute: OrganizationCreateRoute,
   OrganizationListRoute: OrganizationListRoute,
   CredentialViewOrgIdRoute: CredentialViewOrgIdRoute,
@@ -248,6 +248,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileListOrgIdRoute: ProfileListOrgIdRoute,
   CredentialCaptureOrgIdProfileIdRoute: CredentialCaptureOrgIdProfileIdRoute,
   CredentialCreateOrgIdProfileIdRoute: CredentialCreateOrgIdProfileIdRoute,
+  CredentialListOrgIdProfileIdRoute: CredentialListOrgIdProfileIdRoute,
   SchemaSelectOrgIdProfileIdRoute: SchemaSelectOrgIdProfileIdRoute,
 }
 export const routeTree = rootRouteImport
