@@ -46,9 +46,11 @@ const RootLayout = () => {
 
   useEffect(() => {
     const setHeight = async () => {
-      await EdgeToEdge.setBackgroundColor({ color: '#f9f9f9' });
-      await StatusBar.setStyle({ style: Style.Light });
       document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+      try {
+        await EdgeToEdge.setBackgroundColor({ color: '#f9f9f9' });
+        await StatusBar.setStyle({ style: Style.Light });
+      } catch { }
     };
     window.addEventListener('resize', setHeight);
     setHeight();
