@@ -236,7 +236,7 @@ function RouteComponent() {
           <div className="flex flex-col flex-1 min-h-0">
             <h3 className="font-semibold text-lg mb-2">Schema Preview</h3>
             <div className="flex-1 min-h-0">
-              <pre className="h-full p-3 rounded-md bg-muted text-sm overflow-auto">
+              <pre className="h-full p-3 rounded-md text-sm overflow-auto">
                 {JSON.stringify({ name, url, body }, null, 2)}
               </pre>
             </div>
