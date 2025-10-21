@@ -1,4 +1,4 @@
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { ShadCNForm } from '@/components/RJSFShadCNForm'
 import validator from '@rjsf/validator-ajv8'
 import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
@@ -18,14 +18,14 @@ function RouteComponent() {
   const { id: schemaId, name: schemaName } = useCredentialSchemaStore()
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
-
+  const navigate = useNavigate()
   const createCredentialMutation = useMutation({
     mutationFn: async (payload: Credential) => {
       return await createCredential({ orgId, data: payload })
     },
     onSuccess: (created) => {
       setCredential(created)
-      toast.success('Credential created successfully')
+      navigate({ to: '/credential/view/$orgId', params: { orgId: orgId } })
     },
     onError: (err: any) => {
       console.error('Error creating credential:', err)

@@ -36,9 +36,13 @@ export const uploadCredentialImage = async (
   return res.data.data.key;
 };
 
-export const fetchCredentialImage = async (payload: params<string>) => {
-  const res = await api.get(
-    `/storage/credential/${payload.orgId}/${payload.data}`
-  );
-  return res.data.url;
+export const fetchCredentialImage = async (payload: {
+  orgId: string;
+  data: string;
+}) => {
+  const res = await api.get(`/storage/credential/${payload.orgId}`, {
+    params: { key: payload.data },
+  });
+  console.log('url: ', res.data.data.url);
+  return res.data.data.url;
 };
