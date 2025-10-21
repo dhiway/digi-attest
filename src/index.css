@@ -181,9 +181,6 @@
 }
 
 /*custom*/
-body {
-  padding-top: env(safe-area-inset-top);
-}
 
 @custom-variant dark (&:is(.dark *));
 

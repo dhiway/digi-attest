@@ -7,6 +7,8 @@ import { signOut } from '@/lib/api'
 import { useUserStore } from '@/store/user'
 import { CiLogin, CiLogout, CiSquareChevLeft } from "react-icons/ci"
 import { Toaster } from "@/components/ui/sonner"
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 const RootLayout = () => {
   const navigate = useNavigate()
@@ -43,7 +45,9 @@ const RootLayout = () => {
   }, [location.pathname])
 
   useEffect(() => {
-    const setHeight = () => {
+    const setHeight = async () => {
+      await EdgeToEdge.setBackgroundColor({ color: '#f9f9f9' });
+      await StatusBar.setStyle({ style: Style.Light });
       document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
     };
     window.addEventListener('resize', setHeight);
