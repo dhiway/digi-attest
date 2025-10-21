@@ -1,5 +1,6 @@
 import { api } from '.';
 import z from 'zod';
+import { type Credential } from '@/store/credential';
 
 export const CreateCredentialRequestSchema = z.object({
   name: z.string().min(3),
@@ -10,14 +11,14 @@ export const CreateCredentialRequestSchema = z.object({
   data: z.record(z.string(), z.any()),
 });
 
-export type Credential = z.infer<typeof CreateCredentialRequestSchema>;
+export type CredentialRequest = z.infer<typeof CreateCredentialRequestSchema>;
 
 interface params<T> {
   orgId: string;
   data: T;
 }
 
-export const createCredential = async (payload: params<Credential>) => {
+export const createCredential = async (payload: params<CredentialRequest>) => {
   const res = await api.post('/credential/create', payload.data);
   return res.data.data.credential;
 };
@@ -45,4 +46,20 @@ export const fetchCredentialImage = async (payload: {
   });
   console.log('url: ', res.data.data.url);
   return res.data.data.url;
+};
+
+interface ListCredentialsPayload {
+  orgId: string;
+  page: number;
+  limit: number;
+  profileId: string;
+}
+
+export const listCredentials = async (
+  payload: ListCredentialsPayload
+): Promise<Credential[]> => {
+  const res = await api.get(
+    `/credential/${payload.orgId}?page=${payload.page}&limit=${payload.limit}&profileId=${payload.profileId}`
+  );
+  return res.data.data;
 };

@@ -1,6 +1,7 @@
 import ListSkeleton from '@/components/listSkeleton'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { getProfiles, type UserProfile } from '@/lib/api'
 import { useProfileStore } from '@/store/user'
 import { useQuery } from '@tanstack/react-query'
@@ -16,7 +17,7 @@ function RouteComponent() {
     from: '/profile/list/$orgId'
   })
   const { setActiveProfile } = useProfileStore()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryFn: async () => {
       return await getProfiles({ orgId })
     },
@@ -26,7 +27,7 @@ function RouteComponent() {
 
   const profileSelected = (profile: UserProfile) => {
     setActiveProfile(profile)
-    navigate({ 'to': `/schema/select/${orgId}/${profile.id}` })
+    navigate({ 'to': `/credential/list/${orgId}/${profile.id}` })
   }
 
   return (
@@ -46,6 +47,19 @@ function RouteComponent() {
             </Card>
           })
           }
+          {isError || data?.length === 0 ?
+            <Empty>
+              <EmptyHeader>
+                {/* <EmptyMedia variant="icon">
+                  <GoOrganization size={32} />
+                </EmptyMedia> */}
+                <EmptyTitle>{isError ? "Failed to fetch Profiles" : "No Profiles"}</EmptyTitle>
+                <EmptyDescription>
+                  {isError ? "Please try again later." : "No profiles created yet. Get started by adding a profile."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+            : <></>}
         </section>
       </section>
       <Button className='w-3/4 ' onClick={() => navigate({ 'to': `/profile/create/${orgId}` })}> Add Profile </Button>

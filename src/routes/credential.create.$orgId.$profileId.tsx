@@ -4,7 +4,7 @@ import validator from '@rjsf/validator-ajv8'
 import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { createCredential, type Credential } from '@/lib/api/credential'
+import { createCredential, type CredentialRequest } from '@/lib/api/credential'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
@@ -20,7 +20,7 @@ function RouteComponent() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const createCredentialMutation = useMutation({
-    mutationFn: async (payload: Credential) => {
+    mutationFn: async (payload: CredentialRequest) => {
       return await createCredential({ orgId, data: payload })
     },
     onSuccess: (created) => {
