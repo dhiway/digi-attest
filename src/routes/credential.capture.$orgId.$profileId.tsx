@@ -5,7 +5,6 @@ import { base64ToFile } from '@/lib/utils';
 import { useCredentialPhotoStore } from '@/store/credential';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 export const Route = createFileRoute('/credential/capture/$orgId/$profileId')({
@@ -14,8 +13,7 @@ export const Route = createFileRoute('/credential/capture/$orgId/$profileId')({
 
 function RouteComponent() {
   const navigate = useNavigate()
-  const [photo, setPhoto] = useState<{ base64: string | undefined, dataUrl: string | undefined } | null>(null);
-  const { setKey } = useCredentialPhotoStore()
+  const { setKey, setPhoto, photo } = useCredentialPhotoStore()
   const { orgId, profileId } = useParams({ from: '/credential/capture/$orgId/$profileId' })
   const mutate = useMutation({
     mutationFn: async (data: File) => await uploadCredentialImage({ data, orgId }),
@@ -38,7 +36,7 @@ function RouteComponent() {
     try {
       const photo = await takePhoto()
       if (photo) {
-        setPhoto(photo)
+        setPhoto({ photo: photo })
       }
     } catch (e) { console.log(e) }
   }
@@ -49,7 +47,7 @@ function RouteComponent() {
       <p className='text-sm'>Upload existing photo from your device or take a new photo from your camera</p>
     </section>
     <section className='flex-1 mt-4 w-full border shadow'>
-      {photo ? <img src={photo.dataUrl} /> : <span> </span>}
+      {photo ? <img src={photo.dataUrl} /> : <pre> {mutate.error ? JSON.stringify(mutate.error) : <></>} </pre>}
     </section>
     <section className='flex flex-col gap-4 w-4/5 mb-8'>
       <Button

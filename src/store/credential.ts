@@ -4,6 +4,14 @@ import { z } from 'zod/v3';
 // Zod schema for credentialPhoto
 const credentialPhotoSchema = z.object({
   key: z.string().nullable().describe('key provided by s3 bucket'),
+  photo: z
+    .object({
+      base64: z.string(),
+      dataUrl: z.string(),
+    })
+    .nullable()
+    .optional()
+    .describe('dataurl photo captured'),
 });
 
 // Zod schema for credentialSchema
@@ -23,11 +31,16 @@ type CredentialSchema = z.infer<typeof credentialSchemaSchema>;
 
 export const useCredentialPhotoStore = create<
   CredentialPhoto & {
-    setKey: (state: Partial<CredentialPhoto>) => void;
+    setKey: (state: Partial<Omit<CredentialPhoto, 'photo'>>) => void;
+    setPhoto: (state: Partial<Omit<CredentialPhoto, 'key'>>) => void;
   }
 >((set) => ({
   key: null,
+  photo: null,
   setKey: (state) => {
+    set(state);
+  },
+  setPhoto: (state) => {
     set(state);
   },
 }));

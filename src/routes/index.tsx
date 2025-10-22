@@ -31,7 +31,7 @@ function Index() {
     }
   }, [data])
 
-  if (isLoading) return <div>
+  if (isLoading) return <div className='flex justify-center items-center main-container'>
     <Badge>
       <Spinner />
       Syncing

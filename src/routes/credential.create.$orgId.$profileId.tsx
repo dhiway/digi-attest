@@ -6,6 +6,11 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { createCredential, type CredentialRequest } from '@/lib/api/credential'
 import { toast } from 'sonner'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 
 export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
   component: RouteComponent,
@@ -14,7 +19,7 @@ export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
 function RouteComponent() {
   const { orgId, profileId } = useParams({ from: '/credential/create/$orgId/$profileId' })
   const { body } = useCredentialSchemaStore()
-  const { key: credentialImageKey } = useCredentialPhotoStore()
+  const { key: credentialImageKey, photo } = useCredentialPhotoStore()
   const { id: schemaId, name: schemaName } = useCredentialSchemaStore()
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
@@ -59,12 +64,27 @@ function RouteComponent() {
 
   return (
     <div className="main-container max-w-2xl mx-auto py-8 px-4">
-      <ShadCNForm
-        schema={body}
-        validator={validator}
-        onSubmit={handleSubmit}
-        disabled={loading}
-      />
+      <ResizablePanelGroup
+        direction="vertical"
+        className="min-h-[200px] max-w-md rounded-lg border md:min-w-[450px]"
+      >
+        <ResizablePanel defaultSize={75}>
+          <div className="flex h-full items-center w-full justify-center p-6">
+            <ShadCNForm
+              schema={body}
+              validator={validator}
+              onSubmit={handleSubmit}
+              disabled={loading}
+            />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={25}>
+          <div className="flex h-full items-center justify-center p-6">
+            <img src={photo?.dataUrl} />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   )
 }
