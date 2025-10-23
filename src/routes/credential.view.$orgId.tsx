@@ -65,11 +65,11 @@ function RouteComponent() {
             </ItemMedia>
 
             <ItemContent className="space-y-1 mt-4">
-              {Object.keys(data).map((key) => {
+              {Object.keys(data).map((key, i) => {
                 return (
-                  <ItemDescription className='max-w-fit'>
-                    <div className="text-sm text-muted-foreground capitalize font-bold">{key}</div>
-                    <div className="font-medium text-foreground">{data[key]}</div>
+                  <ItemDescription key={i} className='max-w-fit'>
+                    <span className="text-sm text-muted-foreground capitalize font-bold">{key}</span>
+                    <span className="font-medium text-foreground">{data[key]}</span>
                   </ItemDescription>
                 )
               })}

@@ -23,10 +23,6 @@ function RouteComponent() {
   const { id: schemaId, name: schemaName } = useCredentialSchemaStore()
   const navigate = useNavigate()
 
-  if ((!schemaId || schemaId?.length < 10) || orgId?.length > 10) {
-    return navigate({ to: '/schema/select/$orgId/$profileId', params: { orgId, profileId } })
-  }
-
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
   const createCredentialMutation = useMutation({

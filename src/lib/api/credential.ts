@@ -44,7 +44,6 @@ export const fetchCredentialImage = async (payload: {
   const res = await api.get(`/storage/credential/${payload.orgId}`, {
     params: { key: payload.data },
   });
-  console.log('url: ', res.data.data.url);
   return res.data.data.url;
 };
 
