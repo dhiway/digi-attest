@@ -3,6 +3,7 @@ type SchemaProperty = {
   title?: string;
   description?: string;
   pattern?: string;
+  enum?: string[];
 };
 
 type JSONSchema = {
@@ -11,81 +12,74 @@ type JSONSchema = {
 };
 
 type ExtractedField = {
-  key: string;
   value: string | null;
-  confidence: number;
-  matchedBy: 'pattern' | 'title' | 'description' | 'keyword';
+  matchedBy: string | null;
 };
 
 export type OcrExtractedOutput = {
-  formData: Record<string, string | null>;
-  extracted: ExtractedField[];
+  formData: Record<string, string | null> | null;
+  extracted: Record<string, ExtractedField[]> | null;
 };
+
+function normalizeLineForPattern(line: string, pattern: RegExp): string {
+  let normalized = line;
+
+  // If pattern does not explicitly allow spaces, remove all whitespace
+  if (!pattern.source.includes('\\s')) {
+    normalized = normalized.replace(/\s+/g, '');
+  }
+
+  // If pattern looks like a date (DD/MM/YYYY or similar), extract date-like sequence
+  const dateMatch = normalized.match(/\d{1,4}[\/\-]\d{1,2}[\/\-]\d{2,4}/);
+  if (dateMatch) {
+    normalized = dateMatch[0];
+  }
+
+  return normalized;
+}
 
 export function extractValuesFromOCR(
   text: string,
   schema: JSONSchema
-): ExtractedField[] {
-  const normalizedText = text.replace(/\s+/g, ' ').trim();
-  const lowerText = normalizedText.toLowerCase();
-  const results: ExtractedField[] = [];
-
+): Record<string, ExtractedField[]> {
+  const textLines = text.toLowerCase().split('\n');
+  const match: Record<string, ExtractedField[]> = {};
   for (const [key, prop] of Object.entries(schema.properties)) {
-    let value: string | null = null;
-    let confidence = 0;
-    let matchedBy: ExtractedField['matchedBy'] = 'keyword';
+    match[key] = [];
+    for (let i = 0; i < textLines.length; i++) {
+      const line = textLines[i];
+      const finalKey = key.toLowerCase();
 
-    // regex pattern (strongest)
-    if (prop.pattern) {
-      const pattern = new RegExp(prop.pattern);
-      const match = normalizedText.match(pattern);
-      if (match) {
-        value = match[0].replace(/\s+/g, '');
-        confidence = 1.0;
-        matchedBy = 'pattern';
+      // match with key
+      if (line.includes(finalKey)) {
+        const output = line.replace(finalKey, '');
+        match[key].push({ value: output, matchedBy: 'key' });
       }
-    }
+      // match with pattern
+      if (prop.pattern) {
+        const pattern = new RegExp(
+          prop.pattern.replace(/^(\^)/, '').replace(/(\$)$/, '')
+        );
+        const normLine = normalizeLineForPattern(line, pattern);
+        const patternMatch = pattern.test(normLine);
+        if (patternMatch)
+          match[key].push({ value: normLine, matchedBy: 'pattern' });
+      }
+      // match with enum
+      if (prop.enum) {
+        prop.enum.forEach((value) => {
+          // whole word match to the enum
+          const regex = new RegExp(`\\b${value}\\b`, 'i');
+          const exists = regex.test(line);
 
-    // If not matched, title/description-based extraction
-    if (!value) {
-      const candidates = [
-        key,
-        prop.title,
-        ...(prop.description ? prop.description.split(/\s+/) : []),
-      ]
-        .filter(Boolean)
-        .map((s) => s!.toLowerCase());
-
-      for (const candidate of candidates) {
-        // find "Key" or "Number" like segments
-        const candidateIndex = lowerText.indexOf(candidate);
-        if (candidateIndex !== -1) {
-          const substring = normalizedText.slice(
-            candidateIndex,
-            candidateIndex + 100
-          );
-          const possibleValueMatch = substring.match(
-            /[:\s\-]+([A-Z][a-zA-Z]+(?: [A-Z][a-zA-Z]+)*)/
-          );
-          if (possibleValueMatch) {
-            value = possibleValueMatch[1].trim();
-            confidence = 0.75;
-            matchedBy = prop.title ? 'title' : 'description';
-            break;
+          if (exists) {
+            match[key].push({ value, matchedBy: 'enum' });
           }
-        }
+        });
       }
     }
-
-    results.push({
-      key,
-      value,
-      confidence,
-      matchedBy,
-    });
   }
-
-  return results.sort((a, b) => b.confidence - a.confidence);
+  return match;
 }
 
 export function generateFormData(
@@ -93,9 +87,10 @@ export function generateFormData(
   schema: JSONSchema
 ): OcrExtractedOutput {
   const extracted = extractValuesFromOCR(text, schema);
+  console.log(extracted);
   const formData: Record<string, string | null> = {};
-  for (const field of extracted) {
-    formData[field.key] = field.value || null;
+  for (const field of Object.keys(extracted)) {
+    formData[field] = extracted[field][0]?.value || null;
   }
   return { formData, extracted };
 }
