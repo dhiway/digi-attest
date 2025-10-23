@@ -5,8 +5,7 @@ import { getSession } from '@/lib/api'
 import { useUserStore } from '@/store/user'
 import { RequestOtpForm } from '@/components/auth/RequestOtpForm'
 import { VerifyOtpForm } from '@/components/auth/VerifyOtpForm'
-import { Spinner } from '@/components/ui/spinner'
-import { Badge } from '@/components/ui/badge'
+import SuspenseLoader from '@/components/SuspenseLoader'
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -31,12 +30,7 @@ function Index() {
     }
   }, [data])
 
-  if (isLoading) return <div className='flex justify-center items-center main-container'>
-    <Badge>
-      <Spinner />
-      Syncing
-    </Badge>
-  </div>
+  if (isLoading) return <SuspenseLoader message='Syncing' />
 
   return (
     <section className="main-container flex justify-center items-center">

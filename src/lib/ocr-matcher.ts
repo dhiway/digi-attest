@@ -87,7 +87,6 @@ export function generateFormData(
   schema: JSONSchema
 ): OcrExtractedOutput {
   const extracted = extractValuesFromOCR(text, schema);
-  console.log(extracted);
   const formData: Record<string, string | null> = {};
   for (const field of Object.keys(extracted)) {
     formData[field] = extracted[field][0]?.value || null;
