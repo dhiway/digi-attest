@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { listOrganizations } from '@/lib/api/organization'
 import type { Organization } from '@/lib/api/organization/types'
-import { useOrganizationStore } from '@/store/user'
+import { useOrganizationStore, useUserStore } from '@/store/user'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { GoOrganization } from "react-icons/go";
@@ -17,8 +17,9 @@ export const Route = createFileRoute('/organization/list')({
 function RouteComponent() {
   const { setActiveOrganization } = useOrganizationStore()
   const navigate = useNavigate()
+  const { user } = useUserStore()
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["list-organizations"],
+    queryKey: ["list-organizations", user?.id],
     queryFn: async () => {
       return await listOrganizations()
     },
@@ -47,7 +48,7 @@ function RouteComponent() {
             </CardContent>
           </Card>)
       }
-      {isError || data?.length === 0 ?
+      {isError && data?.length === 0 ?
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">

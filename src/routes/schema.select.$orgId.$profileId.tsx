@@ -34,7 +34,7 @@ function RouteComponent() {
   const { profileId, orgId } = useParams({ from: '/schema/select/$orgId/$profileId' })
 
   const { data: schemas = [], isLoading, refetch } = useQuery({
-    queryKey: ['schemas'],
+    queryKey: ['schemas', orgId],
     queryFn: getSchemas,
   })
 

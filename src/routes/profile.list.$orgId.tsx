@@ -21,7 +21,7 @@ function RouteComponent() {
     queryFn: async () => {
       return await getProfiles({ orgId })
     },
-    queryKey: ['profiles'],
+    queryKey: ['profiles', orgId],
     retry: 1
   })
 
@@ -47,7 +47,7 @@ function RouteComponent() {
             </Card>
           })
           }
-          {isError || data?.length === 0 ?
+          {isError && data?.length === 0 ?
             <Empty>
               <EmptyHeader>
                 {/* <EmptyMedia variant="icon">

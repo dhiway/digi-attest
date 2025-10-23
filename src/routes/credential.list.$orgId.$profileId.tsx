@@ -38,7 +38,7 @@ function RouteComponent() {
           </CardHeader>
         </Card>
       )}
-      {isError || data?.length === 0 ?
+      {isError && data?.length === 0 ?
         <Empty>
           <EmptyHeader>
             {/* <EmptyMedia variant="icon">
