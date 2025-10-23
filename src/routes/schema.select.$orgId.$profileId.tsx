@@ -41,7 +41,6 @@ function RouteComponent() {
   const createMutation = useMutation({
     mutationFn: createSchema,
     onSuccess: async (newSchema: CreateSchemaResponse) => {
-      console.log(newSchema)
       refetch()
       setCredentialSchema({ id: newSchema.id, name: newSchema.name, url: newSchema.url || '', body: newSchema.body, new: true })
       setIsCreatingNew(false)

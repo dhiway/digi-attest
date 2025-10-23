@@ -19,6 +19,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['@ionic/pwa-elements/loader'],
+    exclude: ['@ionic/pwa-elements/loader', 'scribe.js-ocr'],
   },
 });

@@ -6,19 +6,33 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function base64ToFile(base64: string, filename: string): File {
-  // Ensure prefix is present
-  const prefixed = base64.startsWith('data:')
-    ? base64
-    : `data:image/jpeg;base64,${base64}`;
+  // If it's already prefixed, just parse it
+  const hasPrefix = base64.startsWith('data:');
+  let mime = 'image/jpeg';
+  let cleanBase64 = base64;
 
-  const arr = prefixed.split(',');
-  const mimeMatch = arr[0].match(/:(.*?);/);
-  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
+  if (!hasPrefix) {
+    // Detect type by first few base64 chars
+    if (base64.startsWith('/9j/')) mime = 'image/jpeg';
+    else if (base64.startsWith('iVBOR')) mime = 'image/png';
+    else if (base64.startsWith('R0lGOD')) mime = 'image/gif';
+    else if (base64.startsWith('UklGR')) mime = 'image/webp';
 
-  while (n--) u8arr[n] = bstr.charCodeAt(n);
+    cleanBase64 = `data:${mime};base64,${base64}`;
+  }
 
-  return new File([u8arr], filename, { type: mime });
+  const [header, data] = cleanBase64.split(',');
+  if (!data) throw new Error('Invalid base64 string');
+
+  mime = header.match(/:(.*?);/)?.[1] || mime;
+
+  const binary = atob(data);
+  const len = binary.length;
+  const u8arr = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    u8arr[i] = binary.charCodeAt(i);
+  }
+
+  const ext = mime.split('/')[1] || 'jpg';
+  return new File([u8arr], `${filename}.${ext}`, { type: mime });
 }
