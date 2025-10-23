@@ -21,4 +21,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@ionic/pwa-elements/loader', 'scribe.js-ocr'],
   },
+  build: {
+    rollupOptions: {
+      external: ['scribe.js-ocr'],
+    },
+  },
 });
