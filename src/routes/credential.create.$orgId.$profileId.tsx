@@ -21,9 +21,14 @@ function RouteComponent() {
   const { body } = useCredentialSchemaStore()
   const { key: credentialImageKey, photo } = useCredentialPhotoStore()
   const { id: schemaId, name: schemaName } = useCredentialSchemaStore()
+  const navigate = useNavigate()
+
+  if ((!schemaId || schemaId?.length < 10) || orgId?.length > 10) {
+    return navigate({ to: '/schema/select/$orgId/$profileId', params: { orgId, profileId } })
+  }
+
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
   const createCredentialMutation = useMutation({
     mutationFn: async (payload: CredentialRequest) => {
       return await createCredential({ orgId, data: payload })

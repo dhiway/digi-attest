@@ -4,7 +4,7 @@ export async function takePhoto() {
   try {
     const image = await Camera.getPhoto({
       quality: 90,
-      allowEditing: true,
+      allowEditing: false,
       resultType: CameraResultType.Base64,
       height: 1124,
     });

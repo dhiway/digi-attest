@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { uploadCredentialImage } from '@/lib/api';
 import { takePhoto } from '@/lib/capacitor/camera';
 import { base64ToFile } from '@/lib/utils';
-import { useCredentialPhotoStore } from '@/store/credential';
+import { useCredentialPhotoStore, useCredentialSchemaStore } from '@/store/credential';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { toast } from 'sonner';
@@ -12,9 +12,15 @@ export const Route = createFileRoute('/credential/capture/$orgId/$profileId')({
 })
 
 function RouteComponent() {
-  const navigate = useNavigate()
-  const { setKey, setPhoto, photo } = useCredentialPhotoStore()
   const { orgId, profileId } = useParams({ from: '/credential/capture/$orgId/$profileId' })
+  const { id } = useCredentialSchemaStore()
+  const { setKey, setPhoto, photo } = useCredentialPhotoStore()
+  const navigate = useNavigate()
+
+  if ((!id || id?.length < 10) || orgId?.length > 10 || photo?.base64 === null || photo?.dataUrl === null) {
+    return navigate({ to: '/profile/list/$orgId', params: { orgId: orgId } })
+  }
+
   const mutate = useMutation({
     mutationFn: async (data: File) => await uploadCredentialImage({ data, orgId }),
     onSuccess: async (s3Key) => {
