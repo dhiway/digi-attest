@@ -36,9 +36,18 @@ const RootLayout = () => {
   })
 
   async function goBack(event: any, callback: () => Promise<void>) {
+    event.preventDefault()
+    const path = window.location.pathname
+    const isCredViewPath = path.startsWith('/credential/view')
+    // conditions
+    if (isCredViewPath) {
+      const split = path.split('/')
+      const orgId = (split.slice(-2, -1)[0])
+      return navigate({ to: '/profile/list/$orgId', params: { orgId: orgId } })
+    }
+    // conditions end
     if (window.history.length > 1) {
       window.history.back()
-      event.preventDefault()
     } else {
       await callback()
     }
@@ -72,7 +81,6 @@ const RootLayout = () => {
   return (
     <div>
       <header
-        onClick={() => navigate({ to: '/' })}
         className='cursor-pointer px-6 py-4 h-16 justify-between items-center flex'
       >
         {showButtons && (
@@ -80,7 +88,7 @@ const RootLayout = () => {
             <CiSquareChevLeft size={24} />
           </span>
         )}
-        <span className='text-2xl mx-auto'>Logo</span>
+        <span onClick={() => '/'} className='text-2xl mx-auto'>Logo</span>
         {showButtons && (
           <span onClick={() => signOutUser.mutateAsync()}>
             {user ? <CiLogout size={24} /> : <CiLogin size={24} />}

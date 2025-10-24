@@ -30,8 +30,8 @@ function RouteComponent() {
   const { profile } = useProfileStore()
   const { organization } = useOrganizationStore()
   const [ocrRunning, setOcrRunning] = useState(false)
-  const { photo } = useCredentialPhotoStore()
-  const { id: schemaId, name: schemaName, body } = useCredentialSchemaStore()
+  const { photo, clearCredentialPhoto } = useCredentialPhotoStore()
+  const { id: schemaId, name: schemaName, body, clearCredentialSchema } = useCredentialSchemaStore()
   const navigate = useNavigate()
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
@@ -41,6 +41,8 @@ function RouteComponent() {
     },
     onSuccess: (created) => {
       setCredential(created)
+      clearCredentialSchema()
+      clearCredentialPhoto()
       navigate({ to: '/credential/view/$orgId/$profileId', params: { orgId, profileId } })
     },
     onError: (err: any) => {

@@ -10,7 +10,7 @@ export const Route = createFileRoute('/credential/capture/$orgId/$profileId')({
 
 function RouteComponent() {
   const { orgId, profileId } = useParams({ from: '/credential/capture/$orgId/$profileId' })
-  const { setPhoto, photo } = useCredentialPhotoStore()
+  const { setPhoto, photo, clearCredentialPhoto } = useCredentialPhotoStore()
   const navigate = useNavigate()
 
   const router = useRouter()
@@ -18,7 +18,7 @@ function RouteComponent() {
     const unsub = router.subscribe('onBeforeNavigate', (params) => {
       const next = (params.toLocation.href)
       if (!next.startsWith("/credential/create")) {
-        setPhoto({ photo: null })
+        clearCredentialPhoto()
       }
     })
     return () => unsub()

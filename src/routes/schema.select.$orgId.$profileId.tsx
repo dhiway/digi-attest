@@ -30,7 +30,7 @@ type CredentialSchemaInput = z.infer<typeof credentialSchemaSchema>
 
 function RouteComponent() {
   const navigate = useNavigate()
-  const { setCredentialSchema, name, url, body } = useCredentialSchemaStore()
+  const { setCredentialSchema, name, url, body, clearCredentialSchema } = useCredentialSchemaStore()
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const { profileId, orgId } = useParams({ from: '/schema/select/$orgId/$profileId' })
 
@@ -48,7 +48,7 @@ function RouteComponent() {
     const unsub = router.subscribe('onBeforeNavigate', (params) => {
       const next = (params.toLocation.href)
       if (!next.startsWith("/credential/capture")) {
-        setCredentialSchema({ name: undefined, body: '', url: '', id: undefined, new: undefined })
+        clearCredentialSchema()
       }
     })
     return () => unsub()

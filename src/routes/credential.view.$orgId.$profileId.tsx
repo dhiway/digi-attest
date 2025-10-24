@@ -90,7 +90,7 @@ function RouteComponent() {
             <ItemContent className="space-y-1 mt-4 w-max">
               {Object.keys(data).map((key, i) => {
                 return (<>
-                  <ItemDescription key={i} className='flex justify-baseline items-center w-max'>
+                  <ItemDescription key={i + key} className='flex justify-baseline items-center w-max'>
                     <span className="text-sm text-muted-foreground capitalize font-bold">{key} &nbsp;</span>
                     <span className="font-medium text-foreground capitalize">{data[key]}</span>
                   </ItemDescription>
