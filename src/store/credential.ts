@@ -18,7 +18,7 @@ const credentialPhotoSchema = z.object({
 // Zod schema for credentialSchema
 export const credentialSchemaSchema = z.object({
   id: z.string().uuid().nullable().optional(),
-  name: z.string().min(3),
+  name: z.string().optional(),
   url: z.string().url().or(z.string()).default('').optional(),
   body: z.any().optional(),
   new: z.boolean().default(false).optional(),
@@ -33,6 +33,7 @@ export const useCredentialPhotoStore = create<
   CredentialPhoto & {
     setKey: (state: Partial<Omit<CredentialPhoto, 'photo'>>) => void;
     setPhoto: (state: Partial<Omit<CredentialPhoto, 'key'>>) => void;
+    clearCredentialPhoto: () => void;
   },
   [['zustand/persist', unknown]]
 >(
@@ -42,6 +43,7 @@ export const useCredentialPhotoStore = create<
       photo: null,
       setKey: (state) => set(state),
       setPhoto: (state) => set(state),
+      clearCredentialPhoto: () => set({ key: null, photo: null }),
     }),
     {
       name: 'credential-photo-store',
@@ -53,6 +55,7 @@ export const useCredentialPhotoStore = create<
 export const useCredentialSchemaStore = create<
   CredentialSchema & {
     setCredentialSchema: (state: Partial<CredentialSchema>) => void;
+    clearCredentialSchema: () => void;
   },
   [['zustand/persist', unknown]]
 >(
@@ -74,6 +77,14 @@ export const useCredentialSchemaStore = create<
           );
         }
       },
+      clearCredentialSchema: () =>
+        set({
+          id: null,
+          name: '',
+          url: '',
+          body: {},
+          new: false,
+        }),
     }),
     {
       name: 'credential-schema-store',

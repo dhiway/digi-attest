@@ -1,4 +1,4 @@
-import { createFileRoute, useParams, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams, useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCredentialImage } from '@/lib/api'
 import {
@@ -10,16 +10,20 @@ import {
 } from '@/components/ui/item'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useCredentialStore } from '@/store/credential'
+import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
 import { useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 
-export const Route = createFileRoute('/credential/view/$orgId')({
+export const Route = createFileRoute('/credential/view/$orgId/$profileId')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { orgId } = useParams({ from: '/credential/view/$orgId' })
+  const navigate = useNavigate()
+  const { orgId, profileId } = useParams({ from: '/credential/view/$orgId/$profileId' })
   const { credential, clearCredential } = useCredentialStore()
+  const { clearCredentialPhoto } = useCredentialPhotoStore()
+  const { clearCredentialSchema } = useCredentialSchemaStore()
   const { data: imageUrl, isLoading } = useQuery({
     queryKey: ['credentialImage', orgId, credential?.imageUrl],
     queryFn: async () => {
@@ -29,11 +33,15 @@ function RouteComponent() {
         data: credential.imageUrl,
       })
     },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 60,
+    retry: 1,
     enabled: !!credential,
   })
 
   const router = useRouter()
-  // Clear Stored State 
+
   useEffect(() => {
     const unsub = router.subscribe('onBeforeNavigate', () => {
       clearCredential()
@@ -51,11 +59,17 @@ function RouteComponent() {
 
   const { name, data } = credential
 
+  const AddAnotherCredential = () => {
+    clearCredentialSchema()
+    clearCredentialPhoto()
+    navigate({ to: '/credential/list/$orgId/$profileId', params: { orgId, profileId } })
+  }
+
   return (
     <div className="main-container flex flex-col gap-4 max-w-2xl mx-auto py-10 px-4">
       <h1 className='font-semibold text-2xl'>{name}</h1>
-      <Card className="border border-border relative flex-1 shadow-sm overflow-scroll">
-        <CardContent>
+      <Card className="relative border-none shadow-none flex-1 overflow-hidden">
+        <CardContent className='border shadow-sm rounded-xl overflow-y-scroll'>
           <Item className="p-4 rounded-lg border bg-card">
             <ItemMedia>
               {isLoading ? (
@@ -73,14 +87,14 @@ function RouteComponent() {
               )}
             </ItemMedia>
 
-            <ItemContent className="space-y-1 mt-4">
+            <ItemContent className="space-y-1 mt-4 w-max">
               {Object.keys(data).map((key, i) => {
-                return (
-                  <ItemDescription key={i} className='max-w-fit'>
-                    <span className="text-sm text-muted-foreground capitalize font-bold">{key}</span>
-                    <span className="font-medium text-foreground">{data[key]}</span>
+                return (<>
+                  <ItemDescription key={i} className='flex justify-baseline items-center w-max'>
+                    <span className="text-sm text-muted-foreground capitalize font-bold">{key} &nbsp;</span>
+                    <span className="font-medium text-foreground capitalize">{data[key]}</span>
                   </ItemDescription>
-                )
+                </>)
               })}
             </ItemContent>
 
@@ -90,6 +104,7 @@ function RouteComponent() {
           </Item>
         </CardContent>
       </Card>
+      <Button onClick={AddAnotherCredential}>Add Another Credential</Button>
     </div>
   )
 }

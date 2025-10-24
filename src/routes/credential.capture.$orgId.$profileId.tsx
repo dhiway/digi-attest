@@ -1,11 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { uploadCredentialImage } from '@/lib/api';
 import { takePhoto } from '@/lib/capacitor/camera';
-import { base64ToFile } from '@/lib/utils';
 import { useCredentialPhotoStore } from '@/store/credential';
-import { useMutation } from '@tanstack/react-query';
-import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
-import { toast } from 'sonner';
+import { createFileRoute, useNavigate, useParams, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/credential/capture/$orgId/$profileId')({
   component: RouteComponent,
@@ -13,25 +10,19 @@ export const Route = createFileRoute('/credential/capture/$orgId/$profileId')({
 
 function RouteComponent() {
   const { orgId, profileId } = useParams({ from: '/credential/capture/$orgId/$profileId' })
-  const { setKey, setPhoto, photo } = useCredentialPhotoStore()
+  const { setPhoto, photo } = useCredentialPhotoStore()
   const navigate = useNavigate()
 
-  const mutate = useMutation({
-    mutationFn: async (data: File) => await uploadCredentialImage({ data, orgId }),
-    onSuccess: async (s3Key) => {
-      setKey({ key: s3Key })
-      navigate({ to: `/credential/create/${orgId}/${profileId}` })
-    },
-    onError: (error) => {
-      toast.error(`Failed to upload the image \n ${error.message}`)
-    }
-  })
-
-  const uploadPhoto = async (photo: string) => {
-    const currentDate = new Date().getTime()
-    const file = base64ToFile(photo, profileId + currentDate.toString())
-    mutate.mutateAsync(file)
-  }
+  const router = useRouter()
+  useEffect(() => {
+    const unsub = router.subscribe('onBeforeNavigate', (params) => {
+      const next = (params.toLocation.href)
+      if (!next.startsWith("/credential/create")) {
+        setPhoto({ photo: null })
+      }
+    })
+    return () => unsub()
+  }, [router])
 
   async function capturePhoto() {
     try {
@@ -47,8 +38,8 @@ function RouteComponent() {
       <h2 className='font-semibold text-lg'>Upload Document</h2>
       <p className='text-sm'>Upload existing photo from your device or take a new photo from your camera</p>
     </section>
-    <section className='flex-1 mt-4 w-full border shadow'>
-      {photo ? <img src={photo.dataUrl} /> : <pre> {mutate.error ? JSON.stringify(mutate.error) : <></>} </pre>}
+    <section className='flex-1 mt-4 w-full'>
+      {photo ? <img className='shadow' src={photo.dataUrl} /> : <></>}
     </section>
     <section className='flex flex-col gap-4 w-4/5 mb-8'>
       <Button
@@ -73,7 +64,7 @@ function RouteComponent() {
         </svg>
         {photo ? "Retake Photo" : "Take Photo"}
       </Button>
-      {photo ? <Button variant='outline' onClick={() => uploadPhoto(photo.base64!)}> Continue </Button> : <></>}
+      {photo ? <Button variant='outline' onClick={() => navigate({ to: `/credential/create/${orgId}/${profileId}` })}> Continue </Button> : <></>}
     </section>
   </div>
 }

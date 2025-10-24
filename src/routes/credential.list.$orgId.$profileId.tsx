@@ -1,11 +1,13 @@
 import ListSkeleton from '@/components/listSkeleton'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { listCredentials, } from '@/lib/api'
 import { useCredentialStore, type Credential } from '@/store/credential'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { CiFileOn } from "react-icons/ci";
 
 export const Route = createFileRoute('/credential/list/$orgId/$profileId')({
   component: RouteComponent,
@@ -16,21 +18,36 @@ function RouteComponent() {
   const { orgId, profileId } = useParams({ from: '/credential/list/$orgId/$profileId' })
   const { data, isLoading, isError } = useQuery({
     queryKey: ["credentials-list", orgId, profileId],
-    queryFn: async () => { return listCredentials({ orgId, page: 1, limit: 20, profileId }) }
+    queryFn: async () => { return listCredentials({ orgId, page: 1, limit: 20, profileId }) },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 60,
+    retry: 1
   })
-  const { setCredential } = useCredentialStore()
+  const { setCredential, clearCredential } = useCredentialStore()
+
+  const router = useRouter()
+  useEffect(() => {
+    const unsub = router.subscribe('onBeforeNavigate', (params) => {
+      const next = (params.toLocation.href)
+      if (!next.startsWith("/credential/view")) {
+        clearCredential()
+      }
+    })
+    return () => unsub()
+  }, [router])
 
   const credSelected = (cred: Credential) => {
     setCredential(cred)
-    navigate({ to: '/credential/view/$orgId', 'params': { orgId } })
+    navigate({ to: '/credential/view/$orgId/$profileId', 'params': { orgId, profileId } })
   }
 
-  return <div className='main-container px-4 py-8 flex flex-col items-center'>
+  return <div className='main-container px-4 py-8 flex flex-col gap-4 items-center'>
     {isLoading ?
       <ListSkeleton />
       : <></>
     }
-    <section className='flex-1 flex flex-col gap-4 w-full'>
+    <section className='flex-1 flex flex-col gap-4 w-full overflow-y-scroll pb-8'>
       {data && data.map((cred) =>
         <Card key={cred.id} className='px-4 py-5 w-full' onClick={() => credSelected(cred)}>
           <CardHeader>
@@ -41,9 +58,9 @@ function RouteComponent() {
       {isError && data?.length === 0 ?
         <Empty>
           <EmptyHeader>
-            {/* <EmptyMedia variant="icon">
-                  <GoOrganization size={32} />
-                </EmptyMedia> */}
+            <EmptyMedia variant="icon">
+              <CiFileOn size={32} />
+            </EmptyMedia>
             <EmptyTitle>{isError ? "Failed to fetch Credentials" : "No Credentials"}</EmptyTitle>
             <EmptyDescription>
               {isError ? "Please try again later." : "No Credentials added yet. Get started by adding a credential."}

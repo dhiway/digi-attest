@@ -4,7 +4,7 @@ import validator from '@rjsf/validator-ajv8'
 import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
 import { useMutation } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { createCredential, type CredentialRequest } from '@/lib/api/credential'
+import { createCredential, uploadCredentialImage, type CredentialRequest } from '@/lib/api/credential'
 import { toast } from 'sonner'
 import {
   ResizableHandle,
@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button'
 import { Clipboard } from '@capacitor/clipboard';
 import { runOcr } from '@/lib/ocr'
 import SuspenseLoader from '@/components/SuspenseLoader'
+import { base64ToFile } from '@/lib/utils'
+import { useOrganizationStore, useProfileStore } from '@/store/user'
 
 export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
   component: RouteComponent,
@@ -25,8 +27,10 @@ export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
 function RouteComponent() {
   const { orgId, profileId } = useParams({ from: '/credential/create/$orgId/$profileId' })
   const [ocrOutput, setOcrOutput] = useState<OcrExtractedOutput | undefined>()
+  const { profile } = useProfileStore()
+  const { organization } = useOrganizationStore()
   const [ocrRunning, setOcrRunning] = useState(false)
-  const { key: credentialImageKey, photo } = useCredentialPhotoStore()
+  const { photo } = useCredentialPhotoStore()
   const { id: schemaId, name: schemaName, body } = useCredentialSchemaStore()
   const navigate = useNavigate()
   const { setCredential } = useCredentialStore()
@@ -37,7 +41,7 @@ function RouteComponent() {
     },
     onSuccess: (created) => {
       setCredential(created)
-      navigate({ to: '/credential/view/$orgId', params: { orgId: orgId } })
+      navigate({ to: '/credential/view/$orgId/$profileId', params: { orgId, profileId } })
     },
     onError: (err: any) => {
       console.error('Error creating credential:', err)
@@ -45,28 +49,44 @@ function RouteComponent() {
     },
   })
 
+
+  const createPhotoUploadMutation = useMutation({
+    mutationFn: async (data: File) => await uploadCredentialImage({ data, orgId }),
+    onSuccess: async (s3Key) => {
+      return s3Key
+    },
+    onError: (error) => {
+      toast.error(`Failed to upload the image \n ${error.message}`)
+      return null
+    }
+  })
+
+  const uploadPhoto = async (photo: string): Promise<string> => {
+    const currentDate = new Date().getTime()
+    const file = base64ToFile(photo, profileId + currentDate.toString())
+    return await createPhotoUploadMutation.mutateAsync(file)
+  }
+
   const handleSubmit = async ({ formData }: any) => {
-    if (!credentialImageKey) {
-      toast.error('Please upload an image before submitting')
-      return
+    if (!photo?.base64) {
+      return toast("No credential photo found")
     }
-
     setLoading(true)
-
-    try {
-      const payload = {
-        name: schemaName,
-        orgId,
-        profileId,
-        data: formData,
-        schemaId: schemaId!,
-        imageUrl: credentialImageKey,
+    await uploadPhoto(photo.base64).then(async (key) => {
+      try {
+        const payload = {
+          name: schemaName || 'schema',
+          orgId: organization?.id || orgId,
+          profileId: profile?.id || profileId,
+          data: formData,
+          schemaId: schemaId!,
+          imageUrl: key,
+        }
+        await createCredentialMutation.mutateAsync(payload)
+      } finally {
+        setLoading(false)
       }
-
-      await createCredentialMutation.mutateAsync(payload)
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   useEffect(() => {

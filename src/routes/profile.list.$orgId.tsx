@@ -1,11 +1,13 @@
 import ListSkeleton from '@/components/listSkeleton'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { getProfiles, type UserProfile } from '@/lib/api'
 import { useProfileStore } from '@/store/user'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { CgProfile } from "react-icons/cg";
 
 export const Route = createFileRoute('/profile/list/$orgId')({
   component: RouteComponent,
@@ -16,14 +18,28 @@ function RouteComponent() {
   const { orgId } = useParams({
     from: '/profile/list/$orgId'
   })
-  const { setActiveProfile } = useProfileStore()
+  const { setActiveProfile, clearProfile } = useProfileStore()
   const { data, isLoading, isError } = useQuery({
     queryFn: async () => {
       return await getProfiles({ orgId })
     },
     queryKey: ['profiles', orgId],
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 60,
     retry: 1
   })
+
+  const router = useRouter()
+  useEffect(() => {
+    const unsub = router.subscribe('onBeforeNavigate', (params) => {
+      const next = (params.toLocation.href)
+      if (!next.startsWith("/credential/list")) {
+        clearProfile()
+      }
+    })
+    return () => unsub()
+  }, [router])
 
   const profileSelected = (profile: UserProfile) => {
     setActiveProfile(profile)
@@ -31,13 +47,13 @@ function RouteComponent() {
   }
 
   return (
-    <div className='px-4 py-8 main-container flex flex-col items-center'>
+    <div className='px-4 py-8 main-container flex flex-col gap-4 items-center'>
       <section className='flex-1 w-full'>
         {isLoading ?
           <ListSkeleton />
           : <></>
         }
-        <section className='flex flex-col gap-4'>
+        <section className='flex flex-col gap-4 overflow-y-scroll pb-8'>
           {data && data.map((profile) => {
             return <Card key={profile.id} className='px-4 py-5' onClick={() => profileSelected(profile)}>
               <CardHeader>
@@ -50,9 +66,9 @@ function RouteComponent() {
           {isError && data?.length === 0 ?
             <Empty>
               <EmptyHeader>
-                {/* <EmptyMedia variant="icon">
-                  <GoOrganization size={32} />
-                </EmptyMedia> */}
+                <EmptyMedia variant="icon">
+                  <CgProfile size={32} />
+                </EmptyMedia>
                 <EmptyTitle>{isError ? "Failed to fetch Profiles" : "No Profiles"}</EmptyTitle>
                 <EmptyDescription>
                   {isError ? "Please try again later." : "No profiles created yet. Get started by adding a profile."}

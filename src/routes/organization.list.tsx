@@ -32,8 +32,10 @@ function RouteComponent() {
 
   const router = useRouter()
   useEffect(() => {
-    const unsub = router.subscribe('onBeforeNavigate', () => {
-      clearOrganization()
+    const unsub = router.subscribe('onBeforeNavigate', (params) => {
+      const next = (params.toLocation.href)
+      if (!next.startsWith("/profile/list"))
+        clearOrganization()
     })
     return () => unsub()
   }, [router])
@@ -44,9 +46,9 @@ function RouteComponent() {
   }
 
 
-  return <div className='main-container px-4 py-8 flex flex-col'>
+  return <div className='main-container px-4 py-8 gap-4 flex flex-col'>
 
-    <section id='org-list' className='flex flex-col flex-1 gap-4 overflow-scroll'>
+    <section id='org-list' className='flex flex-col flex-1 gap-4 overflow-y-scroll pb-8'>
       {isLoading ? <ListSkeleton />
         :
         data && data.map(org =>

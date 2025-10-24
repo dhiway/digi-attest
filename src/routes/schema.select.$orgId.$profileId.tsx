@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
-import { useState } from 'react'
+import { createFileRoute, useNavigate, useParams, useRouter } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod/v3'
@@ -20,6 +20,7 @@ import {
 
 import { credentialSchemaSchema, useCredentialSchemaStore } from '@/store/credential'
 import { getSchemas, createSchema, type CreateSchemaResponse } from '@/lib/api'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/schema/select/$orgId/$profileId')({
   component: RouteComponent,
@@ -36,7 +37,22 @@ function RouteComponent() {
   const { data: schemas = [], isLoading, refetch } = useQuery({
     queryKey: ['schemas', orgId],
     queryFn: getSchemas,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 60,
+    retry: 1
   })
+  const router = useRouter()
+
+  useEffect(() => {
+    const unsub = router.subscribe('onBeforeNavigate', (params) => {
+      const next = (params.toLocation.href)
+      if (!next.startsWith("/credential/capture")) {
+        setCredentialSchema({ name: undefined, body: '', url: '', id: undefined, new: undefined })
+      }
+    })
+    return () => unsub()
+  }, [router])
 
   const createMutation = useMutation({
     mutationFn: createSchema,
@@ -47,6 +63,7 @@ function RouteComponent() {
       form.reset()
     },
     onError: (err) => {
+      toast.error('Failed to create schema. please try again later')
       console.log("mutation error: ", err)
     }
   })
@@ -101,8 +118,8 @@ function RouteComponent() {
         body = JSON.parse(body)
       }
       createMutation.mutate({
-        name: data.name,
-        description: data.name,
+        name: data.name!,
+        description: data.name!,
         version: '1.0.0',
         body: body,
         url: url,
@@ -247,7 +264,7 @@ function RouteComponent() {
       {!isCreatingNew && (
         <div className="pt-4">
           <Button
-            disabled={name.length < 3}
+            disabled={name ? name?.length < 3 : false}
             className="w-full"
             onClick={() =>
               navigate({ to: `/credential/capture/${orgId}/${profileId}` })
