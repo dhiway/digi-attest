@@ -21,6 +21,10 @@ function Index() {
     queryKey: ['session'],
     queryFn: getSession,
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 60,
+
   })
 
   useEffect(() => {

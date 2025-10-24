@@ -6,7 +6,8 @@ import { listOrganizations } from '@/lib/api/organization'
 import type { Organization } from '@/lib/api/organization/types'
 import { useOrganizationStore, useUserStore } from '@/store/user'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { GoOrganization } from "react-icons/go";
 import { z } from 'zod/v4'
 
@@ -15,7 +16,7 @@ export const Route = createFileRoute('/organization/list')({
 })
 
 function RouteComponent() {
-  const { setActiveOrganization } = useOrganizationStore()
+  const { setActiveOrganization, clearOrganization } = useOrganizationStore()
   const navigate = useNavigate()
   const { user } = useUserStore()
   const { data, isLoading, isError } = useQuery({
@@ -23,8 +24,19 @@ function RouteComponent() {
     queryFn: async () => {
       return await listOrganizations()
     },
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 60,
     retry: 1
   })
+
+  const router = useRouter()
+  useEffect(() => {
+    const unsub = router.subscribe('onBeforeNavigate', () => {
+      clearOrganization()
+    })
+    return () => unsub()
+  }, [router])
 
   const selectOrganization = (org: Organization) => {
     setActiveOrganization(org)

@@ -1,4 +1,4 @@
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCredentialImage } from '@/lib/api'
 import {
@@ -11,6 +11,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCredentialStore } from '@/store/credential'
+import { useEffect } from 'react'
 
 export const Route = createFileRoute('/credential/view/$orgId')({
   component: RouteComponent,
@@ -18,8 +19,7 @@ export const Route = createFileRoute('/credential/view/$orgId')({
 
 function RouteComponent() {
   const { orgId } = useParams({ from: '/credential/view/$orgId' })
-  const { credential } = useCredentialStore()
-
+  const { credential, clearCredential } = useCredentialStore()
   const { data: imageUrl, isLoading } = useQuery({
     queryKey: ['credentialImage', orgId, credential?.imageUrl],
     queryFn: async () => {
@@ -31,6 +31,15 @@ function RouteComponent() {
     },
     enabled: !!credential,
   })
+
+  const router = useRouter()
+  // Clear Stored State 
+  useEffect(() => {
+    const unsub = router.subscribe('onBeforeNavigate', () => {
+      clearCredential()
+    })
+    return () => unsub()
+  }, [router])
 
   if (!credential) {
     return (

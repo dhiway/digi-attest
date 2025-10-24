@@ -13,17 +13,26 @@ import scribe from 'scribe.js-ocr';
 
 const RootLayout = () => {
   const navigate = useNavigate()
-  const { user } = useUserStore()
+  const { user, clearUser } = useUserStore()
   const [showButtons, setShowButtons] = useState(false)
 
   const location = useRouterState({ select: (s) => s.location })
 
-  scribe.init({ ocr: true, font: true })
-
+  try {
+    scribe.init({ ocr: true, font: true })
+  } catch (e: any) {
+    console.warn('OCR Registration Failed: ', e.message)
+  }
   const signOutUser = useMutation({
     mutationFn: async () => { await signOut() },
-    onSuccess: () => navigate({ to: '/' }),
-    onError: () => navigate({ to: '/' }),
+    onSuccess: () => {
+      clearUser()
+      navigate({ to: '/' })
+    },
+    onError: () => {
+      clearUser()
+      navigate({ to: '/' })
+    },
   })
 
   async function goBack(event: any, callback: () => Promise<void>) {
