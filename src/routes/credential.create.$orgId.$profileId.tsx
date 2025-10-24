@@ -92,7 +92,9 @@ function RouteComponent() {
   }
 
   useEffect(() => {
-    if (!photo) return
+    if (!photo?.base64) return () => {
+      navigate({ to: '..' })
+    }
     if (!ocrOutput) {
       setOcrRunning(true)
       runOcr(photo, body, profileId).then(output => {
