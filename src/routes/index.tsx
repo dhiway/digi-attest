@@ -30,7 +30,7 @@ function Index() {
   useEffect(() => {
     if (data?.user) {
       setUser(data.user)
-      navigate({ to: '/organization/list' })
+      navigate({ to: '/organization/list', replace: true })
     }
   }, [data])
 

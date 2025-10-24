@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import scribe from 'scribe.js-ocr';
+import { toast } from 'sonner'
 
 const RootLayout = () => {
   const navigate = useNavigate()
@@ -35,21 +36,65 @@ const RootLayout = () => {
     },
   })
 
-  async function goBack(event: any, callback: () => Promise<void>) {
-    event.preventDefault()
+  let lastBackPress = 0
+
+  async function handleExit() {
+    const now = Date.now()
+    if (now - lastBackPress < 1500) {
+      await CapacitorApp.exitApp()
+    } else {
+      lastBackPress = now
+      // show toast/snackbar to confirm
+      toast.message('Press back again to exit')
+    }
+  }
+
+
+  async function goBack(event?: any, callback?: () => Promise<void>) {
     const path = window.location.pathname
     const isCredViewPath = path.startsWith('/credential/view')
-    // conditions
+    const isOrgListPath = path === '/organization/list'
+    const isRootPath = path === '/'
+
+    // 1️⃣ Handle credential view → credential list
     if (isCredViewPath) {
       const split = path.split('/')
-      const orgId = (split.slice(-2, -1)[0])
-      const profileId = split.slice(-1)[0]
-      return navigate({ to: '/credential/list/$orgId/$profileId', params: { orgId, profileId }, replace: true })
+      const orgId = split.at(-2)!
+      const profileId = split.at(-1)!
+
+      const prev = document.referrer || ''
+      const cameFromList = prev.includes(`/credential/list/${orgId}/${profileId}`)
+
+      if (cameFromList) {
+        // user came from list, just go back
+        window.history.back()
+        return
+      } else {
+        // user came directly (e.g., deep link), go to list manually
+        await navigate({
+          to: '/credential/list/$orgId/$profileId',
+          params: { orgId, profileId },
+          replace: true,
+        })
+        return
+      }
     }
-    // conditions end
+
+    // 2️⃣ Handle "home" routes — exit app
+    if (isOrgListPath || isRootPath) {
+      if ((window as any).Capacitor?.isNativePlatform()) {
+        await handleExit()
+        return
+      } else {
+        return
+      }
+    }
+
+    // 3️⃣ Generic browser or app back
     if (window.history.length > 1) {
+      if (event?.preventDefault) event.preventDefault()
       window.history.back()
-    } else {
+    } else if (callback) {
       await callback()
     }
   }
