@@ -12,7 +12,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { type OcrExtractedOutput } from '@/lib/ocr-matcher'
+import { type OcrExtractedOutput } from '@/lib/ocr/ocr-matcher'
 import { Button } from '@/components/ui/button'
 import { Clipboard } from '@capacitor/clipboard';
 import { runOcr } from '@/lib/ocr'
@@ -115,25 +115,57 @@ function RouteComponent() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={35}>
-          {ocrOutput ?
-            <ScrollArea className='bg-background w-96 rounded-md shadow whitespace-nowrap'>
-              <div id='autofill-bar' className='flex w-full space-x-6 p-4'>
-                {ocrOutput?.extracted && Object.keys(ocrOutput.extracted).map((key) => {
-                  if (ocrOutput.extracted) {
-                    const ext = ocrOutput.extracted[key]
-                    return ext ? ext.map((a, i) => {
-                      if (!a.value || a.value?.trim() === '') return <></>
-                      return <Button onClick={() => copyToClipboard(a.value || '')}
-                        id={key + "-" + i} key={i + "-" + key} variant={'outline'} className='w-max'>{a.value}</Button>
-                    })
-                      : <></>
-                  } else { return <></> }
-                })}
+          {ocrOutput?.extracted ? (
+            <ScrollArea className="bg-background w-96 rounded-md shadow whitespace-nowrap">
+              <div id="autofill-bar" className="flex w-full justify-center space-x-6 p-4">
+                {(() => {
+                  // handle "no matches" logic
+                  const isEmpty =
+                    !ocrOutput ||
+                    !ocrOutput.formData ||
+                    !ocrOutput.extracted ||
+                    (Object.values(ocrOutput.formData).every((v) => v === null) &&
+                      Object.values(ocrOutput.extracted).every(
+                        (arr) => Array.isArray(arr) && arr.length === 0
+                      ));
+
+                  if (isEmpty) {
+                    return (
+                      <Button variant="outline" className="w-max">
+                        No Matches detected
+                      </Button>
+                    );
+                  }
+
+                  return Object.keys(ocrOutput.extracted).map((key) => {
+                    const ext = ocrOutput.extracted![key];
+                    if (!ext) return null;
+
+                    return ext.map((a, i) => {
+                      if (!a.value || a.value.trim() === '') return null;
+                      return (
+                        <Button
+                          onClick={() => copyToClipboard(a.value || '')}
+                          id={`${key}-${i}`}
+                          key={`${key}-${i}`}
+                          variant="outline"
+                          className="w-max"
+                        >
+                          {a.value}
+                        </Button>
+                      );
+                    });
+                  });
+                })()}
               </div>
-              <ScrollBar orientation='horizontal' />
+              <ScrollBar orientation="horizontal" />
             </ScrollArea>
-            : <></>
-          }
+          ) : (
+            <Button variant="outline" className="w-max">
+              No Matches detected
+            </Button>
+          )}
+
           <div className="flex h-full items-baseline justify-center p-6 overflow-scroll">
             <img src={photo?.dataUrl} />
           </div>

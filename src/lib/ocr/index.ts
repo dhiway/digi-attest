@@ -1,6 +1,6 @@
 import scribe from 'scribe.js-ocr';
 import { base64ToFile } from '../utils';
-import { generateFormData } from '../ocr-matcher';
+import { generateFormData } from './ocr-matcher';
 
 type photo = {
   base64: string;

@@ -11,7 +11,7 @@ type JSONSchema = {
   properties: Record<string, SchemaProperty>;
 };
 
-type ExtractedField = {
+export type ExtractedField = {
   value: string | null;
   matchedBy: string | null;
 };

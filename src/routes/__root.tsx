@@ -9,6 +9,7 @@ import { CiLogin, CiLogout, CiSquareChevLeft } from "react-icons/ci"
 import { Toaster } from "@/components/ui/sonner"
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import scribe from 'scribe.js-ocr';
 
 const RootLayout = () => {
   const navigate = useNavigate()
@@ -16,6 +17,8 @@ const RootLayout = () => {
   const [showButtons, setShowButtons] = useState(false)
 
   const location = useRouterState({ select: (s) => s.location })
+
+  scribe.init({ ocr: true, font: true })
 
   const signOutUser = useMutation({
     mutationFn: async () => { await signOut() },
