@@ -62,7 +62,7 @@ function RouteComponent() {
   const AddAnotherCredential = () => {
     clearCredentialSchema()
     clearCredentialPhoto()
-    navigate({ to: '/credential/list/$orgId/$profileId', params: { orgId, profileId } })
+    navigate({ to: '/schema/select/$orgId/$profileId', params: { orgId, profileId }, replace: true })
   }
 
   return (
@@ -89,12 +89,12 @@ function RouteComponent() {
 
             <ItemContent className="space-y-1 mt-4 w-max">
               {Object.keys(data).map((key, i) => {
-                return (<>
+                return (
                   <ItemDescription key={i + key} className='flex justify-baseline items-center w-max'>
                     <span className="text-sm text-muted-foreground capitalize font-bold">{key} &nbsp;</span>
                     <span className="font-medium text-foreground capitalize">{data[key]}</span>
                   </ItemDescription>
-                </>)
+                )
               })}
             </ItemContent>
 

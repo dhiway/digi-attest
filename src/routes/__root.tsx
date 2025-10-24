@@ -27,11 +27,11 @@ const RootLayout = () => {
     mutationFn: async () => { await signOut() },
     onSuccess: () => {
       clearUser()
-      navigate({ to: '/' })
+      navigate({ to: '/', replace: true })
     },
     onError: () => {
       clearUser()
-      navigate({ to: '/' })
+      navigate({ to: '/', replace: true })
     },
   })
 
@@ -43,7 +43,8 @@ const RootLayout = () => {
     if (isCredViewPath) {
       const split = path.split('/')
       const orgId = (split.slice(-2, -1)[0])
-      return navigate({ to: '/profile/list/$orgId', params: { orgId: orgId } })
+      const profileId = split.slice(-1)[0]
+      return navigate({ to: '/credential/list/$orgId/$profileId', params: { orgId, profileId }, replace: true })
     }
     // conditions end
     if (window.history.length > 1) {
@@ -88,7 +89,7 @@ const RootLayout = () => {
             <CiSquareChevLeft size={24} />
           </span>
         )}
-        <span onClick={() => '/'} className='text-2xl mx-auto'>Logo</span>
+        <span onClick={() => navigate({ to: '/', replace: true })} className='text-2xl mx-auto'>Logo</span>
         {showButtons && (
           <span onClick={() => signOutUser.mutateAsync()}>
             {user ? <CiLogout size={24} /> : <CiLogin size={24} />}
