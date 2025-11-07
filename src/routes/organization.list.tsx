@@ -45,37 +45,200 @@ function RouteComponent() {
     navigate({ to: `/profile/list/${org.id}` })
   }
 
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-amber-200/50 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                Organizations
+              </h1>
+              <p className="text-amber-600/70 mt-2">
+                Manage your organizations and access their profiles
+              </p>
+            </div>
 
-  return <div className='main-container px-4 py-8 gap-4 flex flex-col'>
+            {user && (
+              <div className="flex items-center gap-3 bg-white/50 rounded-2xl px-4 py-2 border border-amber-200/30">
+                <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">
+                    {user.name?.[0]?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium text-amber-900">{user.name}</p>
+                  <p className="text-xs text-amber-600/70">{user.email}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
 
-    <section id='org-list' className='flex flex-col flex-1 gap-4 overflow-y-scroll pb-8'>
-      {isLoading ? <ListSkeleton />
-        :
-        data && data.map(org =>
-          <Card key={org.id} onClick={() => selectOrganization(org)}>
-            <CardContent className='flex space-x-4 justify-between'>
-              {z.safeParse(z.url(), org.logo).success ?
-                <img alt='logo' src={org.logo} />
-                : <GoOrganization size={32} />
-              }
-              <p className='flex items-center max-w-3/5 truncate capitalize'>{org.name}</p>
-            </CardContent>
-          </Card>)
-      }
-      {isError && data?.length === 0 ?
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <GoOrganization size={32} />
-            </EmptyMedia>
-            <EmptyTitle>{isError ? "Failed to fetch Organizations" : "No Organizations"}</EmptyTitle>
-            <EmptyDescription>
-              {isError ? "Please try again later." : "You are not part of any organization yet. Get started by adding your organization."}
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-        : <></>}
-    </section>
-    <Button onClick={() => navigate({ to: '/organization/create' })}>Add Organization</Button>
-  </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar/Stats Section */}
+          {/* <div className="lg:col-span-1">
+              <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-amber-200/50 p-6 shadow-sm sticky top-28">
+                <div className="text-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <GoOrganization className="text-white text-3xl" />
+                  </div>
+                  <h3 className="font-semibold text-amber-900 text-lg">Organizations</h3>
+                  <p className="text-amber-600 text-sm mt-2">
+                    {data?.length || 0} organization{data?.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+
+                <Button
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/25 text-white"
+                  onClick={() => navigate({ to: '/organization/create' })}
+                >
+                  <GoOrganization className="mr-2" />
+                  Add Organization
+                </Button>
+
+                <div className="mt-6 p-4 bg-amber-50/50 rounded-xl border border-amber-200/30">
+                  <p className="text-xs text-amber-700 text-center">
+                    Select an organization to manage profiles and credentials
+                  </p>
+                </div>
+              </div>
+            </div> */}
+
+          {/* Organizations Grid */}
+          <div className="lg:col-span-4">
+            {/* Header with Stats */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-amber-900 mb-2">
+                  Your Organizations
+                </h2>
+                <p className="text-amber-600">
+                  {data?.length || 0} organization{data?.length !== 1 ? 's' : ''} available
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="border-amber-300 text-amber-700 hover:bg-amber-50 hidden sm:flex"
+                  onClick={() => navigate({ to: '/organization/create' })}
+                >
+                  <GoOrganization className="mr-2" />
+                  New Organization
+                </Button>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <ListSkeleton key={index} />
+                ))}
+              </div>
+            ) : (
+              <>
+                {data && data.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {data.map((org) => (
+                      <Card
+                        key={org.id}
+                        className="bg-white/80 backdrop-blur-sm border-amber-200/50 hover:border-amber-300/70 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 cursor-pointer group hover:scale-105"
+                        onClick={() => selectOrganization(org)}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                              {z.safeParse(z.url(), org.logo).success ? (
+                                <img
+                                  alt='logo'
+                                  src={org.logo}
+                                  className="w-10 h-10 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <GoOrganization className="text-white text-2xl" />
+                              )}
+                            </div>
+                            <div className="w-3 h-3 bg-amber-400 rounded-full group-hover:bg-green-400 transition-colors mt-2"></div>
+                          </div>
+
+                          <h3 className="font-bold text-amber-900 text-lg mb-2 group-hover:text-amber-700 transition-colors line-clamp-2 capitalize">
+                            {org.name}
+                          </h3>
+
+
+
+                          <div className="flex items-center justify-between text-sm text-amber-500 mt-4 pt-4 border-t border-amber-100/50">
+                            <span className="font-medium">View Profiles</span>
+                            <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                              <svg className="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Empty className="bg-white/70 backdrop-blur-sm rounded-2xl border border-amber-200/50 py-16">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-6">
+                          <GoOrganization className="text-white text-4xl" />
+                        </div>
+                      </EmptyMedia>
+                      <EmptyTitle className="text-amber-900 text-2xl font-bold">
+                        {isError ? "Failed to Load Organizations" : "No Organizations Found"}
+                      </EmptyTitle>
+                      <EmptyDescription className="text-amber-600 max-w-md mx-auto text-lg">
+                        {isError
+                          ? "We encountered an issue loading your organizations. Please check your connection and try again."
+                          : "Get started by creating your first organization to manage profiles and credentials."
+                        }
+                      </EmptyDescription>
+                    </EmptyHeader>
+
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button
+                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/25 text-white px-8"
+                        onClick={() => navigate({ to: '/organization/create' })}
+                      >
+                        <GoOrganization className="mr-2" />
+                        Create Organization
+                      </Button>
+
+                      {isError && (
+                        <Button
+                          variant="outline"
+                          className="border-amber-300 text-amber-700 hover:bg-amber-50 px-8"
+                          onClick={() => window.location.reload()}
+                        >
+                          Try Again
+                        </Button>
+                      )}
+                    </div>
+                  </Empty>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Mobile Floating Action Button */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-20">
+        <Button
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 text-white"
+          onClick={() => navigate({ to: '/organization/create' })}
+        >
+          <GoOrganization className="text-xl" />
+        </Button>
+      </div>
+    </div>
+  )
 }
