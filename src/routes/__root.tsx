@@ -137,7 +137,7 @@ const RootLayout = () => {
         <span onClick={() => navigate({ to: '/', replace: true })} className='text-2xl mx-auto'>Logo</span>
         {showButtons && (
           <span onClick={() => signOutUser.mutateAsync()}>
-            {user ? <CiLogout size={24} /> : <CiLogin size={24} />}
+            {user ? <CiLogout size={24} /> : <CiLogin size={24} />}Logout
           </span>
         )}
       </header>
