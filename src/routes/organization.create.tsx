@@ -58,24 +58,30 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex justify-center px-4 py-8 items-center main-container">
-      <Card className="w-full max-w-96 shadow-md">
-        <CardHeader>
-          <CardTitle>Create Organization</CardTitle>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200/50 shadow-lg">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+            Create Organization
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel className="text-amber-900 font-semibold">Organization Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter organization name" {...field} />
+                      <Input
+                        className="py-6 border-amber-300/50 focus:border-amber-500 focus:ring-amber-500/20 bg-amber-50/50 text-amber-900 placeholder-amber-600/50"
+                        placeholder="Enter organization name"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-rose-600" />
                   </FormItem>
                 )}
               />
@@ -85,22 +91,44 @@ function RouteComponent() {
                 name="slug"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slug</FormLabel>
+                    <FormLabel className="text-amber-900 font-semibold">Slug</FormLabel>
                     <FormControl>
-                      <Input placeholder="organization-slug" {...field} />
+                      <Input
+                        className="py-6 border-amber-300/50 focus:border-amber-500 focus:ring-amber-500/20 bg-amber-50/50 text-amber-900 placeholder-amber-600/50"
+                        placeholder="organization-slug"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-rose-600" />
                   </FormItem>
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={mutation.isPending}
-              >
-                {mutation.isPending ? 'Creating...' : 'Create Organization'}
-              </Button>
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800 py-6"
+                  onClick={() => navigate({ to: `/organization/list` })}
+                  disabled={mutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/25 text-white py-6"
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Creating...
+                    </div>
+                  ) : (
+                    "Create Organization"
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>

@@ -35,9 +35,11 @@ function Index() {
   }, [data])
 
   if (isLoading) return <SuspenseLoader message='Syncing' />
-
   return (
-    <section className="main-container flex justify-center items-center">
+    <section className="main-container flex justify-center items-center min-h-screen bg-gradient-to-br from-stone-100 via-orange-50 to-amber-100 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-72 h-72 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+      <div className="absolute top-0 right-0 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-0 left-1/2 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
       {hasUser === null ? (
         <RequestOtpForm setHasUser={setHasUser} setEmail={setEmail} />
       ) : (
