@@ -1,5 +1,4 @@
 import { createRootRoute, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect, useState } from 'react'
 import { App as CapacitorApp } from '@capacitor/app'
 import { useMutation } from '@tanstack/react-query'
@@ -9,6 +8,7 @@ import { CiLogin, CiLogout, CiSquareChevLeft } from "react-icons/ci"
 import { Toaster } from "@/components/ui/sonner"
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import Logo from '@/assets/Text_combained_logo.png'
 import scribe from 'scribe.js-ocr';
 import { toast } from 'sonner'
 
@@ -125,27 +125,27 @@ const RootLayout = () => {
   }, []);
 
   return (
-    <div>
+    <div className='relative'>
       <header
-        className='cursor-pointer px-6 py-4 h-16 justify-between items-center flex'
+        className='absolute top-0 w-full left-1/2 -translate-x-1/2 cursor-pointer px-6 py-4 h-20 justify-between items-center flex'
       >
         {showButtons && (
-          <span onClick={(e) => goBack(e, CapacitorApp.exitApp)}>
+          <p onClick={(e) => goBack(e, CapacitorApp.exitApp)}>
             <CiSquareChevLeft size={24} />
-          </span>
+          </p>
         )}
-        <span onClick={() => navigate({ to: '/', replace: true })} className='text-2xl mx-auto'>Logo</span>
+        <img onClick={() => navigate({ to: '/', replace: true })}
+          src={Logo} className='w-1/2 max-w-14 mx-auto mt-1' />
         {showButtons && (
-          <span onClick={() => signOutUser.mutateAsync()}>
+          <p onClick={() => signOutUser.mutateAsync()}>
             {user ? <CiLogout size={24} /> : <CiLogin size={24} />}
-          </span>
+          </p>
         )}
       </header>
-      <main className='main-container'>
+      <main className='main-container pt-20'>
         <Toaster visibleToasts={1} position='bottom-right' />
         <Outlet />
       </main>
-      <TanStackRouterDevtools position='bottom-right' />
     </div>
   )
 }

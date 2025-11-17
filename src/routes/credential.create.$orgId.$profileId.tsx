@@ -19,6 +19,7 @@ import { runOcr } from '@/lib/ocr'
 import SuspenseLoader from '@/components/SuspenseLoader'
 import { base64ToFile } from '@/lib/utils'
 import { useOrganizationStore, useProfileStore } from '@/store/user'
+import { ProcessLoader } from '@/components/ProcessLoader'
 
 export const Route = createFileRoute('/credential/create/$orgId/$profileId')({
   component: RouteComponent,
@@ -93,7 +94,7 @@ function RouteComponent() {
 
   useEffect(() => {
     if (!photo?.base64) return () => {
-      navigate({ to: '..' })
+      navigate({ to: '..', replace: true })
     }
     if (!ocrOutput) {
       setOcrRunning(true)
@@ -120,6 +121,11 @@ function RouteComponent() {
   if (ocrRunning) {
     return <SuspenseLoader message="Analyzing image using OCR" />
   }
+  if (loading) return (
+    <div className='main-container flex justify-center items-center'>
+      <ProcessLoader title='Creating Credential' />
+    </div>
+  )
   return (<>
     <div className="main-container max-w-2xl mx-auto py-8 px-4">
       <ResizablePanelGroup
