@@ -11,6 +11,9 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import Logo from '@/assets/Text_combained_logo.png'
 import scribe from 'scribe.js-ocr';
 import { toast } from 'sonner'
+import { Avatar } from '@radix-ui/react-avatar'
+import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { CiUser } from "react-icons/ci";
 
 const RootLayout = () => {
   const navigate = useNavigate()
@@ -44,7 +47,6 @@ const RootLayout = () => {
       await CapacitorApp.exitApp()
     } else {
       lastBackPress = now
-      // show toast/snackbar to confirm
       toast.message('Press back again to exit')
     }
   }
@@ -56,7 +58,7 @@ const RootLayout = () => {
     const isOrgListPath = path === '/organization/list'
     const isRootPath = path === '/'
 
-    // 1️⃣ Handle credential view → credential list
+    // Handle credential view → credential list
     if (isCredViewPath) {
       const split = path.split('/')
       const orgId = split.at(-2)!
@@ -80,7 +82,7 @@ const RootLayout = () => {
       }
     }
 
-    // 2️⃣ Handle "home" routes — exit app
+    // Handle "home" routes — exit app
     if (isOrgListPath || isRootPath) {
       if ((window as any).Capacitor?.isNativePlatform()) {
         await handleExit()
@@ -90,7 +92,7 @@ const RootLayout = () => {
       }
     }
 
-    // 3️⃣ Generic browser or app back
+    // Generic browser or app back
     if (window.history.length > 1) {
       if (event?.preventDefault) event.preventDefault()
       window.history.back()
@@ -137,16 +139,30 @@ const RootLayout = () => {
         <img onClick={() => navigate({ to: '/', replace: true })}
           src={Logo} className='w-1/2 max-w-14 mx-auto mt-1' />
         {showButtons && (
-          <p onClick={() => signOutUser.mutateAsync()}>
-            {user ? <CiLogout size={24} /> : <CiLogin size={24} />}
-          </p>
+          <DropdownMenu>
+            <DropdownMenuTrigger className='outline-none'>
+              <Avatar className='border shadow p-2 rounded-full aspect-square'>
+                {!user ? <CiUser size={24} /> :
+                  user?.name.split(" ")[0].slice(0, 1)}{user?.name.split(" ")[1]?.slice(0, 1)
+                }
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className='mr-4 mt-2'>
+              <DropdownMenuLabel> Hi, {user?.name.split(" ")[0]}</DropdownMenuLabel>
+              <DropdownMenuSeparator></DropdownMenuSeparator>
+              <DropdownMenuItem onClick={() => signOutUser.mutateAsync()}>
+                {user ? <CiLogout size={24} /> : <CiLogin size={24} />}
+                {user ? "Logout" : "Login"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </header>
       <main className='main-container pt-20'>
         <Toaster visibleToasts={1} position='bottom-right' />
         <Outlet />
       </main>
-    </div>
+    </div >
   )
 }
 

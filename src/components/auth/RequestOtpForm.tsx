@@ -3,6 +3,7 @@ import { requestOtp } from '@/lib/api'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface Props {
   setHasUser: (v: boolean) => void
@@ -18,6 +19,9 @@ export function RequestOtpForm({ setHasUser, setEmail }: Props) {
       setHasUser(data.user)
       setEmail(email)
     },
+    onError: (error) => {
+      toast.error(error.message || `Failed to send Otp`)
+    }
   })
 
   return (
