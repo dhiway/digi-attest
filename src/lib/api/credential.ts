@@ -10,8 +10,18 @@ export const CreateCredentialRequestSchema = z.object({
   schemaId: z.uuid(),
   data: z.record(z.string(), z.any()),
 });
-
 export type CredentialRequest = z.infer<typeof CreateCredentialRequestSchema>;
+
+export const DraftCredentialRequestSchema = z.object({
+  name: z.string().min(3),
+  profileId: z.uuid(),
+  orgId: z.uuid(),
+  imageUrl: z.string().min(1),
+  schemaId: z.uuid(),
+  data: z.record(z.string(), z.any()),
+});
+
+export type DraftRequest = z.infer<typeof DraftCredentialRequestSchema>
 
 interface params<T> {
   orgId: string;
@@ -19,9 +29,18 @@ interface params<T> {
 }
 
 export const createCredential = async (payload: params<CredentialRequest>) => {
-  const res = await api.post('/credential/create', payload.data);
+  console.log("The sedning data is : ",payload.data)
+  const res = await api.post(`/credential/${'active'}`, payload.data);
   return res.data.data.credential;
 };
+
+export const draftCredential = async (payload: params<DraftRequest>) => {
+  console.log("sending req to draft")
+  console.log(payload)
+  const res = await api.post(`/credential/${'draft'}`, payload.data)
+  console.log("The response is ", res.data)
+  return res.data.data.credential;
+}
 
 export const uploadCredentialImage = async (
   payload: params<File>
@@ -34,6 +53,7 @@ export const uploadCredentialImage = async (
       'Content-Type': 'multipart/form-data',
     },
   });
+  console.log("The response data of uploadCredentialImage is :", res.data)
   return res.data.data.key;
 };
 
@@ -44,6 +64,7 @@ export const fetchCredentialImage = async (payload: {
   const res = await api.get(`/storage/credential/${payload.orgId}`, {
     params: { key: payload.data },
   });
+  console.log("credential image response:  ", res.data)
   return res.data.data.url;
 };
 
@@ -60,5 +81,6 @@ export const listCredentials = async (
   const res = await api.get(
     `/credential/${payload.orgId}?page=${payload.page}&limit=${payload.limit}&profileId=${payload.profileId}`
   );
+ console.log("the credential list",res.data)
   return res.data.data;
 };

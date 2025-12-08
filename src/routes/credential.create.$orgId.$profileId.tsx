@@ -3,8 +3,8 @@ import { ShadCNForm } from '@/components/RJSFShadCNForm'
 import validator from '@rjsf/validator-ajv8'
 import { useCredentialPhotoStore, useCredentialSchemaStore, useCredentialStore } from '@/store/credential'
 import { useMutation } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import { createCredential, uploadCredentialImage, type CredentialRequest } from '@/lib/api/credential'
+import { useEffect, useRef, useState } from 'react'
+import { createCredential, draftCredential, uploadCredentialImage, type CredentialRequest, type DraftRequest } from '@/lib/api/credential'
 import { toast } from 'sonner'
 import {
   ResizableHandle,
@@ -36,6 +36,7 @@ function RouteComponent() {
   const navigate = useNavigate()
   const { setCredential } = useCredentialStore()
   const [loading, setLoading] = useState(false)
+  const formRef = useRef<any>(null);
   const createCredentialMutation = useMutation({
     mutationFn: async (payload: CredentialRequest) => {
       return await createCredential({ orgId, data: payload })
@@ -51,7 +52,17 @@ function RouteComponent() {
       toast.error(err.response?.data?.message || 'Failed to create credential')
     },
   })
-
+  const draftCredentialMutation = useMutation({
+    mutationFn: async (payload: DraftRequest) => {
+      return await draftCredential({ orgId, data: payload })
+    },
+    onSuccess: () => {
+      toast.message('Credential Drafted sucessfully');
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to create');
+    }
+  })
 
   const createPhotoUploadMutation = useMutation({
     mutationFn: async (data: File) => await uploadCredentialImage({ data, orgId }),
@@ -70,22 +81,37 @@ function RouteComponent() {
     return await createPhotoUploadMutation.mutateAsync(file)
   }
 
-  const handleSubmit = async ({ formData }: any) => {
+  const handleSubmit = async ({ formData }: any, status: string) => {
     if (!photo?.base64) {
       return toast("No credential photo found")
     }
     setLoading(true)
     await uploadPhoto(photo.base64).then(async (key) => {
       try {
-        const payload = {
-          name: schemaName || 'schema',
-          orgId: organization?.id || orgId,
-          profileId: profile?.id || profileId,
-          data: formData,
-          schemaId: schemaId!,
-          imageUrl: key,
+        if (status === 'active') {
+          const payload = {
+            name: schemaName || 'schema',
+            orgId: organization?.id || orgId,
+            profileId: profile?.id || profileId,
+            data: formData,
+            schemaId: schemaId!,
+            imageUrl: key,
+            status: status,
+          }
+          await createCredentialMutation.mutateAsync(payload)
         }
-        await createCredentialMutation.mutateAsync(payload)
+        if (status === 'draft') {
+          const payload = {
+            name: schemaName || 'schema',
+            orgId: organization?.id || orgId,
+            profileId: profile?.id || profileId,
+            data: formData,
+            schemaId: schemaId!,
+            imageUrl: key,
+            status: status,
+          }
+          await draftCredentialMutation.mutateAsync(payload)
+        }
       } finally {
         setLoading(false)
       }
@@ -99,9 +125,9 @@ function RouteComponent() {
     if (!ocrOutput) {
       setOcrRunning(true)
       runOcr(photo, body, profileId).then(output => {
+        console.log("the body is ", body.body)
         setOcrRunning(false)
         setOcrOutput(output)
-
       }).catch(() => {
         setOcrRunning(false)
         console.warn('Error occured during ocr run')
@@ -135,12 +161,31 @@ function RouteComponent() {
         <ResizablePanel defaultSize={65}>
           <div className="flex h-full items-baseline w-full justify-center p-6 overflow-y-scroll">
             <ShadCNForm
-              schema={body}
+              ref={formRef}
+              schema={body?.body ?? body}
               validator={validator}
-              onSubmit={handleSubmit}
+              onSubmit={(data) => handleSubmit({ formData: data.formData }, "active")}
               disabled={loading}
               formData={ocrOutput?.formData || null}
-            />
+              className="border-4"
+            >
+              <div className='m-4'>
+                <div className="flex justify-between mt-6">
+                <Button type="submit">Submit</Button>
+
+                <Button
+                  type="button"
+                  onClick={() =>
+                    handleSubmit({ formData: formRef.current?.state?.formData }, "draft")
+                  }
+
+                >
+                  Save as Draft
+                </Button>
+              </div>
+              </div>
+            </ShadCNForm>
+
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />

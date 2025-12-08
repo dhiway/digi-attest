@@ -11,5 +11,7 @@ export const createOrganization = async (payload: {
   slug: string;
 }): Promise<Organization> => {
   const res = await api.post('/auth/organization/create', payload);
+  console.log('Create credential response:',res.data);
   return res.data;
+
 };
