@@ -94,6 +94,7 @@ export const useCredentialSchemaStore = create<
 );
 
 export interface Credential {
+  status: string;
   id: string;
   name: string;
   userId: string;

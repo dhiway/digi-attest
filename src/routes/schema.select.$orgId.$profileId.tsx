@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod/v3'
 import { useQuery, useMutation } from '@tanstack/react-query'
-
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +21,7 @@ import {
 import { credentialSchemaSchema, useCredentialSchemaStore } from '@/store/credential'
 import { getSchemas, createSchema, type CreateSchemaResponse } from '@/lib/api'
 import { toast } from 'sonner'
+import { AlertDialogDescription, AlertDialogTitle } from '@radix-ui/react-alert-dialog'
 
 export const Route = createFileRoute('/schema/select/$orgId/$profileId')({
   component: RouteComponent,
@@ -33,6 +34,9 @@ function RouteComponent() {
   const { setCredentialSchema, name, url, body, clearCredentialSchema } = useCredentialSchemaStore()
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const { profileId, orgId } = useParams({ from: '/schema/select/$orgId/$profileId' })
+  const [isAlreadyExists, setIsAlreadyExists] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [existingSchema, setExistingSchema] = useState<any>(null);
 
   const { data: schemas = [], isLoading, refetch } = useQuery({
     queryKey: ['schemas', orgId],
@@ -42,6 +46,7 @@ function RouteComponent() {
     staleTime: 1000 * 60 * 60,
     retry: 1
   })
+
   const router = useRouter()
 
   useEffect(() => {
@@ -56,11 +61,27 @@ function RouteComponent() {
 
   const createMutation = useMutation({
     mutationFn: createSchema,
-    onSuccess: async (newSchema: CreateSchemaResponse) => {
-      refetch()
-      setCredentialSchema({ id: newSchema.id, name: newSchema.name, url: newSchema.url || '', body: newSchema.body, new: true })
-      setIsCreatingNew(false)
-      form.reset()
+    onSuccess: async (schema: CreateSchemaResponse) => {
+      console.log("schema exists", schema.data.isNew)
+      console.log("schema created")
+      if (schema.data.alreadyExists && !schema.data.isNew) {
+        setIsAlreadyExists(true);
+        setOpen(true);
+        setExistingSchema(schema.data.schema);
+      } else {
+        setIsAlreadyExists(false);
+        refetch()
+        setCredentialSchema({ 
+          id: schema.data.schema.id, 
+          name: schema.data.schema.name, 
+          url: schema.data.schema.url || '', 
+          body: schema.data.schema.body, 
+          new: schema.data.isNew 
+        })
+        setIsCreatingNew(false)
+        form.reset()
+        toast.success('Schema created successfully')
+      }
     },
     onError: (err) => {
       toast.error('Failed to create schema. please try again later')
@@ -77,14 +98,18 @@ function RouteComponent() {
     },
   })
 
-  const handleSelect = (schemaName: string) => {
-    // the schemaName uuid is used to control add new schema button
-    if (schemaName === 'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8') {
+  const handleSelect = (schemaValue: string) => {
+    // the schemaValue uuid is used to control add new schema button
+    if (schemaValue === 'c7e6aaaa-07cb-4e99-bc6e-76cb84332fe8') {
       clearUI()
       setIsCreatingNew(true)
+      return
     }
-    const selected = schemas.find((s: any) => s.name === schemaName)
+    
+    // Find schema by name
+    const selected = schemas.find((s: any) => s.name === schemaValue)
     if (selected) {
+      // Access schema properties directly (not nested under data.schema)
       setCredentialSchema({
         id: selected.id,
         name: selected.name,
@@ -103,7 +128,6 @@ function RouteComponent() {
       body: '',
       new: false,
     })
-
   }
 
   const handleCreateNew = (data: CredentialSchemaInput) => {
@@ -124,15 +148,38 @@ function RouteComponent() {
         body: body,
         url: url,
       })
-    } catch (err: any) { console.error("schema create error: ", err.message) }
+    } catch (err: any) { 
+      console.error("schema create error: ", err.message) 
+      toast.error("Failed to create schema",err);
+    }
   }
 
-  if (isLoading)
+  const handleContinueWithExisting = () => {
+    if (existingSchema) {
+      setCredentialSchema({
+        id: existingSchema.id,
+        name: existingSchema.name,
+        url: existingSchema.url || '',
+        body: existingSchema.body,
+        new: false
+      })
+      setIsCreatingNew(false)
+      form.reset()
+      setOpen(false)
+      setIsAlreadyExists(false)
+      refetch()
+      toast.message('You are using existing schema')
+    }
+  }
+
+  // MOVED: Loading check to component level
+  if (isLoading) {
     return (
       <section className="main-container flex justify-center items-center">
         <p>Loading schemas...</p>
       </section>
     )
+  }
 
   return (
     <section className="main-container px-4 py-8 flex flex-col">
@@ -142,8 +189,11 @@ function RouteComponent() {
             <SelectValue placeholder="Select a Schema" />
           </SelectTrigger>
           <SelectContent className="w-full">
-            {schemas.map((schema: any) => (
-              <SelectItem key={schema.name} value={schema.name}>
+            {schemas.map((schema: any, index: number) => (
+              <SelectItem 
+                key={schema.id || `schema-${index}`} 
+                value={schema.name}
+              >
                 {schema.name}
               </SelectItem>
             ))}
@@ -197,6 +247,7 @@ function RouteComponent() {
                     </FormItem>
                   )}
                 />
+                
                 {/* Schema JSON Body */}
                 <FormField
                   control={form.control}
@@ -247,8 +298,27 @@ function RouteComponent() {
           </div>
         )}
 
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Schema Already Exists</AlertDialogTitle>
+              <AlertDialogDescription>
+                This schema already exists. Would you like to use the existing schema?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={handleContinueWithExisting}>
+                Use Existing Schema
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Schema Preview */}
-        {!isCreatingNew && (name || url || Object.keys(body ?? {}).length > 0) ? (
+        {(!isCreatingNew) && (name || url || Object.keys(body ?? {}).length > 0) ? (
           <div className="flex flex-col flex-1 min-h-0">
             <h3 className="font-semibold text-lg mb-2">Schema Preview</h3>
             <div className="flex-1 min-h-0">
@@ -276,5 +346,4 @@ function RouteComponent() {
       )}
     </section>
   )
-
 }

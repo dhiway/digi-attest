@@ -25,7 +25,6 @@ function RouteComponent() {
     retry: 1
   })
   const { setCredential, clearCredential } = useCredentialStore()
-
   const router = useRouter()
   useEffect(() => {
     const unsub = router.subscribe('onBeforeNavigate', (params) => {

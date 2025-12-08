@@ -56,9 +56,9 @@ function RouteComponent() {
       </div>
     )
   }
-
   const { name, data } = credential
 
+  console.log("The data is", data);
   const AddAnotherCredential = () => {
     clearCredentialSchema()
     clearCredentialPhoto()
@@ -89,12 +89,27 @@ function RouteComponent() {
 
             <ItemContent className="space-y-1 mt-4 w-max">
               {Object.keys(data).map((key, i) => {
+                const value = data[key];
+
                 return (
-                  <ItemDescription key={i + key} className='flex justify-baseline items-center w-max'>
-                    <span className="text-sm text-muted-foreground capitalize font-bold">{key} &nbsp;</span>
-                    <span className="font-medium text-foreground capitalize">{data[key]}</span>
+                  <ItemDescription key={i + key} className="flex items-start w-max flex-col">
+                    <span className="text-sm text-muted-foreground capitalize font-bold">{key}</span>
+
+                    {/* if value is an object */}
+                    {typeof value === "object" && value !== null ? (
+                      <div className="ml-2">
+                        {Object.keys(value).map((subKey, j) => (
+                          <div key={j + subKey} className="flex gap-1">
+                            <span className="font-medium capitalize">{subKey}:</span>
+                            <span className="capitalize">{value[subKey]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="font-medium text-foreground capitalize">{value}</span>
+                    )}
                   </ItemDescription>
-                )
+                );
               })}
             </ItemContent>
 
